@@ -45,15 +45,46 @@ class Layer:
 
     # ====
 
+    # ====
+
     # ================
 
-    # TODO - Layer.forward
-    def forward(self):
-        pass
+    def forward(self, inputs: list[float]):
+
+        if len(inputs) != self.num_inputs:
+            raise ValueError(
+                "número de entradas deve ser igual " \
+                "ao número de pesos"
+            )
+
+        # Salva entradas para ajuste nos passos seguintes
+        self.last_inputs = inputs
+
+        # Itera pelos neurônios, calculando o y_in de cada e armazenando
+        # no vetor de resultados após aplicar a função de ativação
+        outputs = []
+        for i_neuron in range(len(self.weights)):
+            y_in_neuron = self.bias[i_neuron]
+            for inp, w in zip(inputs, self.weights[i_neuron]):
+                y_in_neuron += inp * w
+            outputs.append(self.activation_func(y_in_neuron))
+
+        # Salva resultados para ajuste nos passos seguintes
+        self.last_outputs = outputs
+
+        return outputs
+
+    # ====
+
+    # ====
 
     # TODO - Layer.backward
     def backward(self):
         pass
+
+    # ====
+
+    # ====
 
     # TODO - Layer.update_weights
     def update_weights(self):
