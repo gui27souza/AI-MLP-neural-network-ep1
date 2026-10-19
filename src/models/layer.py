@@ -62,7 +62,7 @@ class Layer:
 
         # Itera pelos neurônios, calculando o y_in de cada e armazenando
         # no vetor de resultados após aplicar a função de ativação
-        outputs = []
+        outputs: list[float] = []
         for i_neuron in range(len(self.weights)):
             y_in_neuron = self.bias[i_neuron]
             for inp, w in zip(inputs, self.weights[i_neuron]):
