@@ -79,8 +79,12 @@ class Layer:
     # ====
 
     # TODO - Layer.backward
-    def backward(self):
-        pass
+    def backward(self) -> list[float]:
+
+        for i_neuron in range(len(self.weights)):
+            pass
+
+        return []
 
     # ====
 

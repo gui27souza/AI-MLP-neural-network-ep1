@@ -84,6 +84,10 @@ class MLP:
 
         outputs = self.output_layer.forward(current_outputs)
 
+        # Os pesos devem ser atualizados de forma 'online'
+        # ou seja, a cada cálculo de output / iteração
+        self._update_weights(target, outputs)
+
         return outputs
 
 
@@ -92,3 +96,19 @@ class MLP:
 
     # TODO - MLP - aprendizado da rede com backpropagation
 
+    def _update_weights(self, target: list[float], outputs: list[float]):
+
+        out_deltas = self._output_layer_deltas(target, outputs)
+
+    def _output_layer_deltas(
+        self, target: list[float], outputs: list[float]
+    ) -> list[float]:
+
+        deltas: list[float] = []
+
+        for t, out in zip(target, outputs):
+            deltas.append(
+                (t - out) * self.output_layer.derivative_activation(out)
+            )
+
+        return deltas
