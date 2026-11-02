@@ -113,6 +113,8 @@ class MLP:
 
     def _update_weights(self, target: list[float], outputs: list[float]):
 
+        # A camada de saída tem tratativa especial, como não há uma
+        # camada após ela, sua fórmula de cálculo dos deltas é diferente
         final_layer_deltas: list[float] = []
         for t, out in zip(target, outputs):
             final_layer_deltas.append(
@@ -121,9 +123,13 @@ class MLP:
 
         out_deltas = final_layer_deltas
 
+        # Guarda os pesos originais da camada de saída antes da
+        # atualização, pois a última camada escondida precisará
+        # deles para calcular seu próprio delta
         next_weights = self.output_layer.weights
         next_deltas = out_deltas
 
+        # Atualiza pesos e bias da camada de saída
         for i_neuron in range(self.output_layer.num_neurons):
             delta_i = out_deltas[i_neuron]
             self.output_layer.bias[i_neuron] += self.learn_rate * delta_i
@@ -133,8 +139,11 @@ class MLP:
                     self.learn_rate * delta_i * x_j
                 )
 
+        # Propaga o erro de trás para frente nas camadas escondidas
         for _, layer in reversed(list(enumerate(self.hidden_layers))):
 
+            # Salva a matriz de pesos atual antes do backward
+            # alterar seus valores
             current_layer_weights = layer.weights
 
             next_deltas = layer.backward(
@@ -143,4 +152,6 @@ class MLP:
                 learn_rate=self.learn_rate,
             )
 
+            # Os pesos não atualizados desta camada viram a
+            # referência da camada seguinte
             next_weights = current_layer_weights

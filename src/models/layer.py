@@ -93,7 +93,8 @@ class Layer:
 
         current_layer_deltas: list[float] = []
 
-        # Cálculo dos novos deltas
+        # Cálculo dos novos deltas com a propagação
+        # dos erros da camada seguinte
         for i_neuron in range(self.num_neurons):
 
             error_sum = 0.0
