@@ -111,21 +111,36 @@ class MLP:
     # =====
 
 
-    # TODO - MLP - aprendizado da rede com backpropagation
-
     def _update_weights(self, target: list[float], outputs: list[float]):
 
-        out_deltas = self._output_layer_deltas(target, outputs)
-
-    def _output_layer_deltas(
-        self, target: list[float], outputs: list[float]
-    ) -> list[float]:
-
-        deltas: list[float] = []
-
+        final_layer_deltas: list[float] = []
         for t, out in zip(target, outputs):
-            deltas.append(
+            final_layer_deltas.append(
                 (t - out) * self.output_layer.derivative_activation(out)
             )
 
-        return deltas
+        out_deltas = final_layer_deltas
+
+        next_weights = self.output_layer.weights
+        next_deltas = out_deltas
+
+        for i_neuron in range(self.output_layer.num_neurons):
+            delta_i = out_deltas[i_neuron]
+            self.output_layer.bias[i_neuron] += self.learn_rate * delta_i
+            for j_input in range(self.output_layer.num_inputs):
+                x_j = self.output_layer.last_inputs[j_input]
+                self.output_layer.weights[i_neuron][j_input] += (
+                    self.learn_rate * delta_i * x_j
+                )
+
+        for _, layer in reversed(list(enumerate(self.hidden_layers))):
+
+            current_layer_weights = layer.weights
+
+            next_deltas = layer.backward(
+                next_layer_deltas=next_deltas,
+                next_layer_weights=next_weights,
+                learn_rate=self.learn_rate,
+            )
+
+            next_weights = current_layer_weights
