@@ -80,18 +80,40 @@ class Layer:
 
     # ====
 
-    # TODO - Layer.backward
-    def backward(self) -> list[float]:
+    def backward(
+        self,
+        next_layer_deltas: list[float],
+        next_layer_weights: list[list[float]],
+        learn_rate: float,
+    ) -> list[float]:
+        """
+        Calcula os deltas da camada atual usando os deltas e pesos da camada seguinte,
+        atualiza os pesos e biases locais e retorna os novos deltas para a camada anterior.
+        """
 
-        for i_neuron in range(len(self.weights)):
-            pass
+        current_layer_deltas: list[float] = []
 
-        return []
+        # Cálculo dos novos deltas
+        for i_neuron in range(self.num_neurons):
 
-    # ====
+            error_sum = 0.0
+            for k_next_neuron in range(len(next_layer_deltas)):
+                delta_k = next_layer_deltas[k_next_neuron]
+                weight_ki = next_layer_weights[k_next_neuron][i_neuron]
+                error_sum += delta_k * weight_ki
 
-    # ====
+            y_i = self.last_outputs[i_neuron]
+            delta_i = error_sum * self.derivative_activation(y_i)
+            current_layer_deltas.append(delta_i)
 
-    # TODO - Layer.update_weights
-    def update_weights(self):
-        pass
+        # Atualização de pesos e bias com o novo delta
+        for i_neuron in range(self.num_neurons):
+            delta_i = current_layer_deltas[i_neuron]
+
+            self.bias[i_neuron] += learn_rate * delta_i
+
+            for j_input in range(self.num_inputs):
+                x_j = self.last_inputs[j_input]
+                self.weights[i_neuron][j_input] += learn_rate * delta_i * x_j
+
+        return current_layer_deltas
