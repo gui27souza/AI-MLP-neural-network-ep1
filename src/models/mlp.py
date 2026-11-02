@@ -16,14 +16,27 @@ class MLP:
         output_deriv_activation: Callable[[float], float],
     ) -> None:
 
+        # Essa checagem funciona na prática pois a camada de
+        # entrada não existe de fato, é uma abstração para que
+        # façamos o input na primeira camada escondida
         if num_inputs != hidden_layers[0].num_inputs:
             raise ValueError(
                 "número de entradas deve ser igual " \
                 "o mesmo da primeira camada escondida"
             )
 
-        self.num_inputs = num_inputs
-        self.hidden_layers = hidden_layers
+        # Checagem de segurança entre as camadas escondidas,
+        # garante que tenham entradas e saídas compatíveis
+        previous_num_outputs = num_inputs
+        for i, layer in enumerate(hidden_layers):
+            if layer.num_inputs != previous_num_outputs:
+                raise ValueError(
+                    f"número de entradas da camada {i + 1} incompatível "
+                    "ao número de saídas da camada anterior. "
+                    f"Entradas: {layer.num_inputs} | "
+                    f"Saídas da camada anterior: {previous_num_outputs}"
+                )
+            previous_num_outputs = layer.num_neurons
 
         # Têm o mesmo número de entradas do que o número de
         # saídas da camada anterior, ou seja, da última
@@ -34,8 +47,10 @@ class MLP:
             activation_func=output_activation,
             derivative_activation=output_deriv_activation,
         )
-        self.num_outputs = num_outputs
 
+        self.num_inputs = num_inputs
+        self.hidden_layers = hidden_layers
+        self.num_outputs = num_outputs
         self.learn_rate = learn_rate
 
 
@@ -48,6 +63,8 @@ class MLP:
         targets: list[list[float]]
     ):
 
+        # Valor deve ser o mesmo para permitir a comparação e 
+        # cálculo do erro
         if len(inputs_list) != len(targets):
             raise ValueError(
                 "número de entradas deve ser igual ao de targets: "

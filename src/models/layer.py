@@ -53,8 +53,10 @@ class Layer:
 
         if len(inputs) != self.num_inputs:
             raise ValueError(
-                "número de entradas deve ser igual " \
-                "ao número de pesos"
+                "número de entradas deve ser igual "
+                "ao número de pesos. "
+                f"Entradas: {inputs} | "
+                f"Pesos: {self.num_inputs}"
             )
 
         # Salva entradas para ajuste nos passos seguintes
