@@ -1,7 +1,11 @@
+import os
+
 from .models import Layer, MLP
 from .funcs import sigmoide_binaria, deriv_sigmoide_binaria
 
-NUM_EPOCHS = 10
+
+NUM_EPOCHS = int(os.getenv("NUM_EPOCHS", 1000))
+
 
 if __name__ == "__main__":
 
