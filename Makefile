@@ -6,8 +6,13 @@ help:
 	@echo
 	@echo "== AI MLP Neural Network"
 	@echo
+	@echo "====> main -> executa o entrypoint geral"
 	@echo "====> lab_logic_gates -> executa as redes referentes às portas lógicas AND, OR e XOR"
 	@echo
+
+main:
+	@NUM_EPOCHS=$(EPOCHS) \
+	python3 -m src.main
 
 lab_logic_gates:
 	@NUM_EPOCHS=$(EPOCHS) \

@@ -1,8 +1,15 @@
 import os
 
-from .models import Layer, MLP
-from .funcs import sigmoide_binaria, deriv_sigmoide_binaria
-from .orchestrator import Orchestrator
+from src.dataset_loader import DatasetLoader
+
+from src.funcs import (
+    sigmoide_bipolar, deriv_sigmoide_bipolar,
+)
+from src.models import (
+    Layer, MLP,
+)
+from src.orchestrator import Orchestrator
+from src.mlp_persister import MLPPersister
 
 
 NUM_EPOCHS = int(os.getenv("NUM_EPOCHS", 1000))
@@ -10,98 +17,41 @@ NUM_EPOCHS = int(os.getenv("NUM_EPOCHS", 1000))
 
 if __name__ == "__main__":
 
-    inputs = [
-        [0.0, 0.0],
-        [0.0, 1.0],
-        [1.0, 0.0],
-        [1.0, 1.0],
-    ]
+    dataset_path = "data/caracteres-Fausett/caracteres-limpo.csv"
 
-    # =====
-
-    targets_AND = [
-        [0.0],
-        [0.0],
-        [0.0],
-        [1.0]
-    ]
-
-    mlp_AND = MLP(
-        num_inputs=2, num_outputs=1,
-        learn_rate=0.25,
-        hidden_layers=[],
-        output_activation=sigmoide_binaria,
-        output_deriv_activation=deriv_sigmoide_binaria,
+    inputs, targets = DatasetLoader.load_csv(
+        filepath=dataset_path,
+        num_target_columns=7,
     )
 
-    orch_AND = Orchestrator(
-        mlp=mlp_AND, epochs=NUM_EPOCHS,
-        inputs=inputs, targets=targets_AND,
+    layer = Layer(
+        num_inputs=len(inputs[0]),
+        num_neurons=32,
+        activation_func=sigmoide_bipolar,
+        derivative_activation=deriv_sigmoide_bipolar,
     )
 
-    # =====
-
-    targets_OR = [
-        [0.0],
-        [1.0],
-        [1.0],
-        [1.0]
-    ]
-
-    mlp_OR = MLP(
-        num_inputs=2, num_outputs=1,
-        learn_rate=0.25,
-        hidden_layers=[],
-        output_activation=sigmoide_binaria,
-        output_deriv_activation=deriv_sigmoide_binaria,
-    )
-
-    orch_OR = Orchestrator(
-        mlp=mlp_OR, epochs=NUM_EPOCHS,
-        inputs=inputs, targets=targets_OR,
-    )
-
-    # =====
-
-    targets_XOR = [
-        [0.0],
-        [1.0],
-        [1.0],
-        [0.0]
-    ]
-
-    hidden_layer_1_XOR = Layer(
-        num_inputs=2, num_neurons=2,
-        activation_func=sigmoide_binaria,
-        derivative_activation=deriv_sigmoide_binaria,
-    )
-
-    mlp_XOR = MLP(
-        num_inputs=2, num_outputs=1,
+    mlp = MLP(
+        num_inputs=len(inputs[0]),
+        num_outputs=len(targets[0]),
         learn_rate=0.1,
-        hidden_layers=[hidden_layer_1_XOR],
-        output_activation=sigmoide_binaria,
-        output_deriv_activation=deriv_sigmoide_binaria,
+        hidden_layers=[layer],
+        output_activation=sigmoide_bipolar,
+        output_deriv_activation=deriv_sigmoide_bipolar,
     )
 
-    orch_XOR = Orchestrator(
-        mlp=mlp_XOR, epochs=NUM_EPOCHS,
-        inputs=inputs, targets=targets_XOR,
+    orch = Orchestrator(
+        mlp=mlp, epochs=NUM_EPOCHS, inputs=inputs, targets=targets
     )
 
-    orchs = [
-        orch_AND,
-        orch_OR,
-        orch_XOR,
-    ]
+    orch.run(
+        print_epochs_interval=max(1, int(NUM_EPOCHS / 1))
+    )
 
-    # =====
 
-    for orch in orchs:
+    print("")
+    orch.print_results()
+    print("")
 
-        print_interval = max(1, int(NUM_EPOCHS / 2))
-        orch.run(print_epochs_interval=print_interval)
-
-        print("")
-        orch.print_results()
-        print("")
+    mlp_persister = MLPPersister()
+    mlp_persister.save(mlp, "models/mlp_caracteres.json")

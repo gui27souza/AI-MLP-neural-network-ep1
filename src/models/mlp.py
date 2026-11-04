@@ -1,4 +1,6 @@
 from typing import Callable
+import json
+import os
 
 from .layer import Layer
 
@@ -84,7 +86,7 @@ class MLP:
         for input_data, target in zip(inputs_list, targets):
             output = self._run_iteration(input_data, target)
             if print_info:
-                print(f"in: {input_data} \t-> out: {output} \t| target: {target}")
+                print(f"in: {input_data}\nout:    {output}\ntarget: {target}\n")
 
     # ===
 
