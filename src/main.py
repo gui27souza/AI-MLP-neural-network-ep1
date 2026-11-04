@@ -10,26 +10,14 @@ NUM_EPOCHS = int(os.getenv("NUM_EPOCHS", 1000))
 
 if __name__ == "__main__":
 
-    hidden_layer = Layer(
-        num_inputs=2, num_neurons=1,
-        activation_func=sigmoide_binaria,
-        derivative_activation=deriv_sigmoide_binaria,
-    )
-
-    mlp = MLP(
-        num_inputs=2, num_outputs=1,
-        learn_rate=0.25,
-        hidden_layers=[hidden_layer],
-        output_activation=sigmoide_binaria,
-        output_deriv_activation=deriv_sigmoide_binaria,
-    )
-
     inputs = [
         [0.0, 0.0],
         [0.0, 1.0],
         [1.0, 0.0],
         [1.0, 1.0],
     ]
+
+    # =====
 
     targets_AND = [
         [0.0],
@@ -38,6 +26,21 @@ if __name__ == "__main__":
         [1.0]
     ]
 
+    mlp_AND = MLP(
+        num_inputs=2, num_outputs=1,
+        learn_rate=0.25,
+        hidden_layers=[],
+        output_activation=sigmoide_binaria,
+        output_deriv_activation=deriv_sigmoide_binaria,
+    )
+
+    orch_AND = Orchestrator(
+        mlp=mlp_AND, epochs=NUM_EPOCHS,
+        inputs=inputs, targets=targets_AND,
+    )
+
+    # =====
+
     targets_OR = [
         [0.0],
         [1.0],
@@ -45,24 +48,58 @@ if __name__ == "__main__":
         [1.0]
     ]
 
-    orch_AND = Orchestrator(
-        mlp=mlp, epochs=NUM_EPOCHS,
-        inputs=inputs, targets=targets_AND,
+    mlp_OR = MLP(
+        num_inputs=2, num_outputs=1,
+        learn_rate=0.25,
+        hidden_layers=[],
+        output_activation=sigmoide_binaria,
+        output_deriv_activation=deriv_sigmoide_binaria,
     )
 
     orch_OR = Orchestrator(
-        mlp=mlp, epochs=NUM_EPOCHS,
+        mlp=mlp_OR, epochs=NUM_EPOCHS,
         inputs=inputs, targets=targets_OR,
+    )
+
+    # =====
+
+    targets_XOR = [
+        [0.0],
+        [1.0],
+        [1.0],
+        [0.0]
+    ]
+
+    hidden_layer_1_XOR = Layer(
+        num_inputs=2, num_neurons=2,
+        activation_func=sigmoide_binaria,
+        derivative_activation=deriv_sigmoide_binaria,
+    )
+
+    mlp_XOR = MLP(
+        num_inputs=2, num_outputs=1,
+        learn_rate=0.1,
+        hidden_layers=[hidden_layer_1_XOR],
+        output_activation=sigmoide_binaria,
+        output_deriv_activation=deriv_sigmoide_binaria,
+    )
+
+    orch_XOR = Orchestrator(
+        mlp=mlp_XOR, epochs=NUM_EPOCHS,
+        inputs=inputs, targets=targets_XOR,
     )
 
     orchs = [
         orch_AND,
         orch_OR,
+        orch_XOR,
     ]
+
+    # =====
 
     for orch in orchs:
 
-        print_interval = max(1, int(NUM_EPOCHS / 5))
+        print_interval = max(1, int(NUM_EPOCHS / 2))
         orch.run(print_epochs_interval=print_interval)
 
         print("")

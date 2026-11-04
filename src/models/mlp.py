@@ -14,35 +14,43 @@ class MLP:
         hidden_layers: list[Layer],
         output_activation: Callable[[float], float],
         output_deriv_activation: Callable[[float], float],
-    ) -> None:
+    ):
+        """
+        Inicializa a MLP.
 
-        # Essa checagem funciona na prática pois a camada de
-        # entrada não existe de fato, é uma abstração para que
-        # façamos o input na primeira camada escondida
-        if num_inputs != hidden_layers[0].num_inputs:
-            raise ValueError(
-                "número de entradas deve ser igual " \
-                "o mesmo da primeira camada escondida"
-            )
+        - A 'camada de entrada' não possui pesos ou neurônios (é apenas o vetor bruto de dados).
+        - 'hidden_layers' define as camadas intermediárias de processamento. Podem ser 0 (lista vazia).
+        - 'output_layer' é mantida como um atributo separado pois possui um tratamento
+          especial no Backpropagation (cálculo direto de erro via target vs output).
+        """
 
-        # Checagem de segurança entre as camadas escondidas,
-        # garante que tenham entradas e saídas compatíveis
-        previous_num_outputs = num_inputs
-        for i, layer in enumerate(hidden_layers):
-            if layer.num_inputs != previous_num_outputs:
+        # Trata a conexão de entradas da output_layer caso hidden_layers seja vazia
+        if hidden_layers:
+            if num_inputs != hidden_layers[0].num_inputs:
                 raise ValueError(
-                    f"número de entradas da camada {i + 1} incompatível "
-                    "ao número de saídas da camada anterior. "
-                    f"Entradas: {layer.num_inputs} | "
-                    f"Saídas da camada anterior: {previous_num_outputs}"
+                    "número de entradas deve ser igual ao mesmo da primeira camada escondida"
                 )
-            previous_num_outputs = layer.num_neurons
 
-        # Têm o mesmo número de entradas do que o número de
-        # saídas da camada anterior, ou seja, da última
-        # camada escondida
+            previous_num_outputs = num_inputs
+            for i, layer in enumerate(hidden_layers):
+                if layer.num_inputs != previous_num_outputs:
+                    raise ValueError(
+                        f"número de entradas da camada {i + 1} incompatível "
+                        "ao número de saídas da camada anterior. "
+                        f"Entradas: {layer.num_inputs} | "
+                        f"Saídas da camada anterior: {previous_num_outputs}"
+                    )
+                previous_num_outputs = layer.num_neurons
+
+            output_layer_inputs = hidden_layers[-1].num_neurons
+
+        # Sem camadas escondidas, a camada de saída
+        # conecta direto nas entradas da rede
+        else:
+            output_layer_inputs = num_inputs
+
         self.output_layer = Layer(
-            num_inputs=hidden_layers[-1].num_neurons,
+            num_inputs=output_layer_inputs,
             num_neurons=num_outputs,
             activation_func=output_activation,
             derivative_activation=output_deriv_activation,
@@ -61,7 +69,6 @@ class MLP:
         self,
         inputs_list: list[list[float]],
         targets: list[list[float]],
-
         print_info: bool = False,
     ):
 
@@ -74,11 +81,12 @@ class MLP:
                 f"targets {len(targets)}"
             )
 
-        for input, target in zip(inputs_list, targets):
-            output = self._run_iteration(input, target)
+        for input_data, target in zip(inputs_list, targets):
+            output = self._run_iteration(input_data, target)
             if print_info:
-                print(f"in: {input} \t-> out: {output} \t| target: {target}")
+                print(f"in: {input_data} \t-> out: {output} \t| target: {target}")
 
+    # ===
 
     def _run_iteration(self, inputs: list[float], target: list[float]):
 
@@ -142,7 +150,7 @@ class MLP:
                     self.learn_rate * delta_i * x_j
                 )
 
-        # Propaga o erro de trás para frente nas camadas escondidas
+        # Propaga o erro pelas camadas escondidas (se houver alguma)
         for _, layer in reversed(list(enumerate(self.hidden_layers))):
 
             # Salva a matriz de pesos atual antes do backward
