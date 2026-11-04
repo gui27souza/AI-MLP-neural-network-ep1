@@ -2,6 +2,7 @@ import os
 
 from .models import Layer, MLP
 from .funcs import sigmoide_binaria, deriv_sigmoide_binaria
+from .orchestrator import Orchestrator
 
 
 NUM_EPOCHS = int(os.getenv("NUM_EPOCHS", 1000))
@@ -29,6 +30,7 @@ if __name__ == "__main__":
         [1.0, 0.0],
         [1.0, 1.0],
     ]
+
     targets_AND = [
         [0.0],
         [0.0],
@@ -36,7 +38,33 @@ if __name__ == "__main__":
         [1.0]
     ]
 
-    for i in range(1, NUM_EPOCHS+1):
-        print(f"\n=== Epoch {i}")
-        mlp.run_epoch(inputs, targets_AND)
-        print("==========")
+    targets_OR = [
+        [0.0],
+        [1.0],
+        [1.0],
+        [1.0]
+    ]
+
+    orch_AND = Orchestrator(
+        mlp=mlp, epochs=NUM_EPOCHS,
+        inputs=inputs, targets=targets_AND,
+    )
+
+    orch_OR = Orchestrator(
+        mlp=mlp, epochs=NUM_EPOCHS,
+        inputs=inputs, targets=targets_OR,
+    )
+
+    orchs = [
+        orch_AND,
+        orch_OR,
+    ]
+
+    for orch in orchs:
+
+        print_interval = max(1, int(NUM_EPOCHS / 5))
+        orch.run(print_epochs_interval=print_interval)
+
+        print("")
+        orch.print_results()
+        print("")

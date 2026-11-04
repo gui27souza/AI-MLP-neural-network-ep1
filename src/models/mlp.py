@@ -60,7 +60,9 @@ class MLP:
     def run_epoch(
         self,
         inputs_list: list[list[float]],
-        targets: list[list[float]]
+        targets: list[list[float]],
+
+        print_info: bool = False,
     ):
 
         # Valor deve ser o mesmo para permitir a comparação e 
@@ -74,7 +76,8 @@ class MLP:
 
         for input, target in zip(inputs_list, targets):
             output = self._run_iteration(input, target)
-            print(f"in: {input} \t-> out: {output} \t| target: {target}")
+            if print_info:
+                print(f"in: {input} \t-> out: {output} \t| target: {target}")
 
 
     def _run_iteration(self, inputs: list[float], target: list[float]):
