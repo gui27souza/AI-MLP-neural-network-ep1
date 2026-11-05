@@ -16,6 +16,8 @@ class MLP:
         hidden_layers: list[Layer],
         output_activation: Callable[[float], float],
         output_deriv_activation: Callable[[float], float],
+        weight_range: tuple[float, float] = (-0.2, 0.2),
+        bias_range: tuple[float, float] = (-0.2, 0.2),
     ):
         """
         Inicializa a MLP.
@@ -56,6 +58,8 @@ class MLP:
             num_neurons=num_outputs,
             activation_func=output_activation,
             derivative_activation=output_deriv_activation,
+            weight_range=weight_range,
+            bias_range=bias_range,
         )
 
         self.num_inputs = num_inputs

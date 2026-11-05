@@ -2,26 +2,33 @@ from typing import Callable
 
 import numpy as np
 
-from src.config import Constants
-
 
 class Layer:
 
     def __init__(
-        self, num_inputs: int, num_neurons: int,
+        self,
+        num_inputs: int,
+        num_neurons: int,
         activation_func: Callable[[float], float],
-        derivative_activation: Callable[[float], float]
+        derivative_activation: Callable[[float], float],
+        weight_range: tuple[float, float] = (-0.2, 0.2),
+        bias_range: tuple[float, float] = (-0.2, 0.2),
     ):
         self.num_inputs = num_inputs
         self.num_neurons = num_neurons
         self.activation_func = activation_func
         self.derivative_activation = derivative_activation
+        self.weight_range = weight_range
+        self.bias_range = bias_range
+
+        b_min, b_max = bias_range
+        w_min, w_max = weight_range
 
         # Inicializa os Bias de cada neurônio com um valor aleatório
         # em dado intervalo, armazenando em um vetor de valores
         self.bias: list[float] = list(np.random.uniform(
-            low=Constants.MIN_INIT_BIAS,
-            high=Constants.MAX_INIT_BIAS,
+            low=b_min,
+            high=b_max,
             size=num_neurons
         ))
 
@@ -30,8 +37,8 @@ class Layer:
         # armazenando em um vetor de vetores
         self.weights: list[list[float]] = [
             list(np.random.uniform(
-                low=Constants.MIN_INIT_WEIGHTS,
-                high=Constants.MAX_INIT_WEIGHTS,
+                low=w_min,
+                high=w_max,
                 size=num_inputs
             ))
             for _ in range(num_neurons)
