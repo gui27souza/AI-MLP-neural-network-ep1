@@ -1,6 +1,7 @@
 from typing import Callable
 import json
 import os
+import numpy as np
 
 from .layer import Layer
 
@@ -67,6 +68,50 @@ class MLP:
         self.num_outputs = num_outputs
         self.learn_rate = learn_rate
 
+    # =====
+
+    def predict(self, inputs: list[float]) -> list[float]:
+        """
+        Executa apenas a propagação direta (feedforward) sem alterar os pesos.
+        Útil para inferência e avaliação de métricas.
+        """
+        if len(inputs) != self.num_inputs:
+            raise ValueError(
+                f"número de entradas incompatível: esperado {self.num_inputs} e recebido {len(inputs)}"
+            )
+
+        current_inputs = inputs
+        for layer in self.hidden_layers:
+            current_inputs = layer.forward(current_inputs)
+
+        return self.output_layer.forward(current_inputs)
+
+    def evaluate(
+        self, inputs_list: list[list[float]], targets: list[list[float]]
+    ) -> tuple[float, float]:
+        """
+        Calcula o Erro Quadrático Médio (MSE) e a Acurácia para um conjunto de dados.
+        - Em problemas multiclasse (num_outputs > 1): usa Winner-Takes-All (argmax).
+        - Em problemas binários (num_outputs == 1): avalia o sinal (positivo ou negativo).
+        """
+        outputs = [self.predict(x) for x in inputs_list]
+
+        outputs_arr = np.array(outputs)
+        targets_arr = np.array(targets)
+
+        # MSE = média da diferença ao quadrado
+        mse = float(np.mean((targets_arr - outputs_arr) ** 2))
+
+        # Acurácia
+        if self.num_outputs > 1:
+            preds = np.argmax(outputs_arr, axis=1)
+            actuals = np.argmax(targets_arr, axis=1)
+            acc = float(np.mean(preds == actuals))
+        else:
+            preds = np.where(outputs_arr >= 0, 1.0, -1.0)
+            acc = float(np.mean(preds == targets_arr))
+
+        return mse, acc
 
     # =====
 
