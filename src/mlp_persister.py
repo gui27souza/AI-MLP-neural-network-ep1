@@ -1,5 +1,6 @@
 import os
 import json
+from datetime import datetime
 
 from src.models import (
     MLP,
@@ -9,14 +10,30 @@ from src.models import (
 
 class MLPPersister:
 
-    def save(self, mlp: MLP, filepath: str) -> None:
-        """Salva a estrutura e os pesos da rede em um arquivo JSON."""
+    @staticmethod
+    def _resolve_unique_filepath(filepath: str) -> str:
+        """Se o arquivo já existir, adiciona sufixo incremental (_v2, _v3, ...) para não sobrescrever."""
+        if not os.path.exists(filepath):
+            return filepath
 
-        dirname = os.path.dirname(filepath)
+        base, ext = os.path.splitext(filepath)
+        version = 2
+        while os.path.exists(f"{base}_v{version}{ext}"):
+            version += 1
+        return f"{base}_v{version}{ext}"
+
+    @staticmethod
+    def save(mlp: MLP, filepath: str, metrics: dict | None = None) -> str:
+        """Salva a estrutura, os pesos da rede e métricas opcionais em um arquivo JSON."""
+
+        resolved_filepath = MLPPersister._resolve_unique_filepath(filepath)
+        dirname = os.path.dirname(resolved_filepath)
         if dirname:
             os.makedirs(dirname, exist_ok=True)
 
         data = {
+            "created_at": datetime.now().isoformat(),
+            "metrics": metrics or {},
             "num_inputs": mlp.num_inputs,
             "num_outputs": mlp.num_outputs,
             "learn_rate": mlp.learn_rate,
@@ -37,13 +54,14 @@ class MLPPersister:
             },
         }
 
-        with open(filepath, "w", encoding="utf-8") as f:
+        with open(resolved_filepath, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=4)
 
-        print(f"Modelo salvo com sucesso em: {filepath}")
+        print(f"Modelo salvo com sucesso em: {resolved_filepath}")
+        return resolved_filepath
 
+    @staticmethod
     def load(
-        self,
         filepath: str,
         activation_func,
         derivative_activation,
