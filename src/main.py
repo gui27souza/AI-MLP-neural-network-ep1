@@ -69,9 +69,9 @@ if __name__ == "__main__":
         "val_acc": round(val_acc_pct, 2),
     }
 
-    # Gera nome limpo com arquitetura (ex: h32), acurácia e MSE (anti-colisão com _v2 automático)
+    # Gera nome limpo com arquitetura (ex: h32), épocas, acurácia e MSE (anti-colisão com _v2 automático)
     hidden_desc = "h" + "_".join(str(layer.num_neurons) for layer in mlp.hidden_layers)
-    filename = f"mlp_caracteres_{hidden_desc}_acc{val_acc_pct:.1f}_mse{val_mse:.3f}.json"
+    filename = f"mlp_caracteres_{hidden_desc}_e{NUM_EPOCHS}_acc{val_acc_pct:.1f}_mse{val_mse:.3f}.json"
     filepath = f"models/{filename}"
 
     MLPPersister.save(mlp, filepath, metrics=metrics)
