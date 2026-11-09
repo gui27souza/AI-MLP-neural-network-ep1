@@ -9,12 +9,9 @@
 - Melhorar documentação dos passos críticos do Backpropagation
     - Adicionar fórmulas para melhor seguimento do entendimento
 
+
 ## Trazer da versão do colab
 
-1. Termo de Momentum (μ) no Backpropagation
-    - O que faz: Adiciona inércia na atualização dos pesos (Δwₜ = α · grad + μ · Δwₜ₋₁).
-    - Onde entra: No Layer e MLP.
-    - Impacto: Faz a rede convergir mais rápido e sem oscilar tanto.
 2. Critérios de Parada e Early Stopping
     - O que faz: Parar por MSE alvo (target_error) e parar quando o erro de teste parar de cair (patience), restaurando os melhores pesos observados.
     - Onde entra: No Orchestrator e MLP.

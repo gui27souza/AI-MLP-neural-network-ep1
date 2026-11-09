@@ -19,6 +19,7 @@ class MLP:
         output_deriv_activation: Callable[[float], float],
         weight_range: tuple[float, float] = (-0.2, 0.2),
         bias_range: tuple[float, float] = (-0.2, 0.2),
+        momentum: float = 0.0,
     ):
         """
         Inicializa a MLP.
@@ -67,6 +68,7 @@ class MLP:
         self.hidden_layers = hidden_layers
         self.num_outputs = num_outputs
         self.learn_rate = learn_rate
+        self.momentum = momentum
 
     # =====
 
@@ -185,33 +187,47 @@ class MLP:
 
         out_deltas = final_layer_deltas
 
-        # Guarda os pesos originais da camada de saída antes da
-        # atualização, pois a última camada escondida precisará
-        # deles para calcular seu próprio delta
-        next_weights = self.output_layer.weights
+        # Guarda uma cópia dos pesos originais da camada de saída antes da
+        # atualização, pois a última camada escondida precisará deles
+        # (pesos anteriores à correção) para calcular seu próprio delta
+        next_weights = [w[:] for w in self.output_layer.weights]
         next_deltas = out_deltas
 
-        # Atualiza pesos e bias da camada de saída
+        # Atualiza pesos e bias da camada de saída com termo de correção e momentum
         for i_neuron in range(self.output_layer.num_neurons):
             delta_i = out_deltas[i_neuron]
-            self.output_layer.bias[i_neuron] += self.learn_rate * delta_i
+
+            # Δb_k = α * δ_k + μ * Δb_k(t-1)
+            # b_k = b_k + Δb_k
+            delta_bias = (self.learn_rate * delta_i) + (
+                self.momentum * self.output_layer.last_delta_bias[i_neuron]
+            )
+            self.output_layer.bias[i_neuron] += delta_bias
+            self.output_layer.last_delta_bias[i_neuron] = delta_bias
+
+            # Δw_jk = α * δ_k * z_j + μ * Δw_jk(t-1)
+            # w_jk = w_jk + Δw_jk
             for j_input in range(self.output_layer.num_inputs):
                 x_j = self.output_layer.last_inputs[j_input]
-                self.output_layer.weights[i_neuron][j_input] += (
-                    self.learn_rate * delta_i * x_j
+                delta_w = (self.learn_rate * delta_i * x_j) + (
+                    self.momentum
+                    * self.output_layer.last_delta_weights[i_neuron][j_input]
                 )
+                self.output_layer.weights[i_neuron][j_input] += delta_w
+                self.output_layer.last_delta_weights[i_neuron][j_input] = delta_w
 
         # Propaga o erro pelas camadas escondidas (se houver alguma)
         for _, layer in reversed(list(enumerate(self.hidden_layers))):
 
-            # Salva a matriz de pesos atual antes do backward
+            # Salva uma cópia da matriz de pesos atual antes do backward
             # alterar seus valores
-            current_layer_weights = layer.weights
+            current_layer_weights = [w[:] for w in layer.weights]
 
             next_deltas = layer.backward(
                 next_layer_deltas=next_deltas,
                 next_layer_weights=next_weights,
                 learn_rate=self.learn_rate,
+                momentum=self.momentum,
             )
 
             # Os pesos não atualizados desta camada viram a

@@ -47,6 +47,12 @@ class Layer:
         self.last_inputs = []
         self.last_outputs = []
 
+        self.last_delta_weights = [
+            [0.0 for _ in range(num_inputs)]
+            for _ in range(num_neurons)
+        ]
+        self.last_delta_bias = [0.0 for _ in range(len(self.weights))]
+
 
     # ================
 
@@ -92,6 +98,7 @@ class Layer:
         next_layer_deltas: list[float],
         next_layer_weights: list[list[float]],
         learn_rate: float,
+        momentum: float = 0.0,
     ) -> list[float]:
         """
         Calcula os deltas da camada atual usando os deltas e pesos da camada seguinte,
@@ -116,12 +123,22 @@ class Layer:
 
         # Atualização de pesos e bias com o novo delta
         for i_neuron in range(self.num_neurons):
+
+            # Atualiza o bias com o termo de correção e momentum:
+            # Δb_i = α * δ_i + μ * Δb_i(t-1)
+            # b_i = b_i + Δb_i
             delta_i = current_layer_deltas[i_neuron]
+            delta_bias = (learn_rate * delta_i) + (momentum * self.last_delta_bias[i_neuron])
+            self.bias[i_neuron] += delta_bias
+            self.last_delta_bias[i_neuron] = delta_bias
 
-            self.bias[i_neuron] += learn_rate * delta_i
-
+            # Atualiza os pesos de cada entrada com a regra delta e momentum:
+            # Δw_ij = α * δ_i * x_j + μ * Δw_ij(t-1)
+            # w_ij = w_ij + Δw_ij
             for j_input in range(self.num_inputs):
                 x_j = self.last_inputs[j_input]
-                self.weights[i_neuron][j_input] += learn_rate * delta_i * x_j
+                delta_w = (learn_rate * delta_i * x_j) + (momentum * self.last_delta_weights[i_neuron][j_input])
+                self.weights[i_neuron][j_input] += delta_w
+                self.last_delta_weights[i_neuron][j_input] = delta_w
 
         return current_layer_deltas
