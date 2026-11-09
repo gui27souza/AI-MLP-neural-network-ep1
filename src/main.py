@@ -50,13 +50,34 @@ def save_model_checkpoint(mlp: MLP, orch: Orchestrator) -> None:
         train_acc_pct = (orch.history["train_acc"][-1] * 100) if orch.history["train_acc"] else 0.0
         val_mse = orch.history["val_mse"][-1] if orch.history["val_mse"] else 0.0
 
+        # Identifica os picos históricos de validação (melhor época antes de eventual overfitting)
+        best_val_acc = 0.0
+        best_val_acc_epoch = 0
+        if orch.history["val_acc"]:
+            best_val_acc = max(orch.history["val_acc"])
+            best_val_acc_epoch = orch.history["val_acc"].index(best_val_acc) + 1
+
+        best_val_mse = 0.0
+        best_val_mse_epoch = 0
+        if orch.history["val_mse"]:
+            best_val_mse = min(orch.history["val_mse"])
+            best_val_mse_epoch = orch.history["val_mse"].index(best_val_mse) + 1
+
         metrics = {
+            "dataset_info": {
+                "train_samples": len(orch.inputs),
+                "val_samples": len(orch.val_inputs) if orch.val_inputs else 0,
+            },
             "epochs": orch.total_epochs,
             "duration_seconds": round(duration, 2),
             "train_mse": orch.history["train_mse"][-1] if orch.history["train_mse"] else None,
             "train_acc": round(train_acc_pct, 2),
             "val_mse": round(val_mse, 5),
             "val_acc": round(val_acc_pct, 2),
+            "best_val_acc": round(best_val_acc * 100, 2),
+            "best_val_acc_epoch": best_val_acc_epoch,
+            "best_val_mse": round(best_val_mse, 5),
+            "best_val_mse_epoch": best_val_mse_epoch,
         }
 
         hidden_desc = "h" + "_".join(str(layer.num_neurons) for layer in mlp.hidden_layers)

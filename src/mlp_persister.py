@@ -33,10 +33,18 @@ class MLPPersister:
 
         data = {
             "created_at": datetime.now().isoformat(),
+            "hyperparameters": {
+                "learn_rate": mlp.learn_rate,
+                "momentum": mlp.momentum,
+                "num_inputs": mlp.num_inputs,
+                "num_outputs": mlp.num_outputs,
+                "hidden_neurons": [layer.num_neurons for layer in mlp.hidden_layers],
+            },
             "metrics": metrics or {},
             "num_inputs": mlp.num_inputs,
             "num_outputs": mlp.num_outputs,
             "learn_rate": mlp.learn_rate,
+            "momentum": mlp.momentum,
             "hidden_layers": [
                 {
                     "num_inputs": layer.num_inputs,
@@ -87,6 +95,7 @@ class MLPPersister:
             num_inputs=data["num_inputs"],
             num_outputs=data["num_outputs"],
             learn_rate=data["learn_rate"],
+            momentum=data.get("momentum", data.get("hyperparameters", {}).get("momentum", 0.0)),
             hidden_layers=hidden_layers,
             output_activation=activation_func,
             output_deriv_activation=derivative_activation,
