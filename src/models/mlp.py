@@ -141,7 +141,10 @@ class MLP:
 
     # ===
 
-    def _run_iteration(self, inputs: list[float], target: list[float]):
+    def _run_iteration(self, inputs: list[float], target: list[float]) -> list[float]:
+        """
+        Executa uma iteração de treinamento completa (amostra online) para um par (x, t).
+        """
 
         if len(inputs) != self.num_inputs:
             raise ValueError(
@@ -157,28 +160,30 @@ class MLP:
                 f"recebido {len(target)}"
             )
 
+        # Propagação direta pelas camadas escondidas
         current_inputs: list[float] = inputs
         current_outputs: list[float] = inputs
         for layer in self.hidden_layers:
             current_outputs = layer.forward(current_inputs)
             current_inputs = current_outputs
 
+        # Propagação direta para a camada de saída
         outputs = self.output_layer.forward(current_outputs)
 
-        # Os pesos devem ser atualizados de forma 'online'
-        # ou seja, a cada cálculo de output / iteração
+        # Atualização dos pesos online
         self._update_weights(target, outputs)
 
         return outputs
 
-
     # =====
 
-
     def _update_weights(self, target: list[float], outputs: list[float]):
+        """
+        Executa a retropropagação do erro e atualização de pesos e biases.
+        """
 
-        # A camada de saída tem tratativa especial, como não há uma
-        # camada após ela, sua fórmula de cálculo dos deltas é diferente
+        # Cálculo do termo de erro da camada de saída
+        # δ_k = (t_k - y_k) * f'(y_k)
         final_layer_deltas: list[float] = []
         for t, out in zip(target, outputs):
             final_layer_deltas.append(
@@ -187,40 +192,44 @@ class MLP:
 
         out_deltas = final_layer_deltas
 
-        # Guarda uma cópia dos pesos originais da camada de saída antes da
-        # atualização, pois a última camada escondida precisará deles
-        # (pesos anteriores à correção) para calcular seu próprio delta
+        # Cópia profunda dos pesos originais da saída antes da atualização
+        # δ_in_j = Σ_k (δ_k * w_kj)
         next_weights = [w[:] for w in self.output_layer.weights]
         next_deltas = out_deltas
 
-        # Atualiza pesos e bias da camada de saída com termo de correção e momentum
+        # Atualização de pesos e biases da camada de saída
         for i_neuron in range(self.output_layer.num_neurons):
             delta_i = out_deltas[i_neuron]
 
-            # Δb_k = α * δ_k + μ * Δb_k(t-1)
-            # b_k = b_k + Δb_k
+            # Correção do bias com Momentum
+            # Δw_0k = α * δ_k + μ * Δw_0k(t-1)
             delta_bias = (self.learn_rate * delta_i) + (
                 self.momentum * self.output_layer.last_delta_bias[i_neuron]
             )
+            # Atualização
+            # w_0k = w_0k + Δw_0k
             self.output_layer.bias[i_neuron] += delta_bias
             self.output_layer.last_delta_bias[i_neuron] = delta_bias
 
-            # Δw_jk = α * δ_k * z_j + μ * Δw_jk(t-1)
-            # w_jk = w_jk + Δw_jk
+            # Correção dos pesos com Momentum
             for j_input in range(self.output_layer.num_inputs):
+
+                # Δw_jk = α * δ_k * z_j + μ * Δw_jk(t-1)
                 x_j = self.output_layer.last_inputs[j_input]
                 delta_w = (self.learn_rate * delta_i * x_j) + (
                     self.momentum
                     * self.output_layer.last_delta_weights[i_neuron][j_input]
                 )
+
+                # Atualização
+                # w_jk = w_jk + Δw_jk
                 self.output_layer.weights[i_neuron][j_input] += delta_w
                 self.output_layer.last_delta_weights[i_neuron][j_input] = delta_w
 
-        # Propaga o erro pelas camadas escondidas (se houver alguma)
+        # Propaga o erro pelas camadas escondidas (em ordem reversa)
         for _, layer in reversed(list(enumerate(self.hidden_layers))):
 
-            # Salva uma cópia da matriz de pesos atual antes do backward
-            # alterar seus valores
+            # Salva cópia dos pesos atuais da camada escondida antes de atualizá-la
             current_layer_weights = [w[:] for w in layer.weights]
 
             next_deltas = layer.backward(
@@ -230,6 +239,6 @@ class MLP:
                 momentum=self.momentum,
             )
 
-            # Os pesos não atualizados desta camada viram a
-            # referência da camada seguinte
+            # Os pesos não-atualizados desta camada viram
+            # a referência para a camada anterior
             next_weights = current_layer_weights
