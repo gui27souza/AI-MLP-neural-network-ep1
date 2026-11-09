@@ -5,7 +5,7 @@ from src.funcs import sigmoide_bipolar, deriv_sigmoide_bipolar
 from src.orchestrator import Orchestrator
 
 
-NUM_EPOCHS = int(os.getenv("NUM_EPOCHS", 1000))
+NUM_EPOCHS = int(os.environ["NUM_EPOCHS"])
 
 
 if __name__ == "__main__":
