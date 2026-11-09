@@ -242,3 +242,24 @@ class MLP:
             # Os pesos não-atualizados desta camada viram
             # a referência para a camada anterior
             next_weights = current_layer_weights
+
+    # =====
+
+    # =====
+
+    def get_weights(self) -> dict:
+        """
+        Retorna uma cópia dos pesos e biases de todas as camadas da rede.
+        """
+        return {
+            "hidden_layers": [layer.get_weights() for layer in self.hidden_layers],
+            "output_layer": self.output_layer.get_weights(),
+        }
+
+    def set_weights(self, state: dict) -> None:
+        """
+        Restaura os pesos e biases de todas as camadas a partir de um snapshot.
+        """
+        for layer, layer_state in zip(self.hidden_layers, state["hidden_layers"]):
+            layer.set_weights(layer_state)
+        self.output_layer.set_weights(state["output_layer"])

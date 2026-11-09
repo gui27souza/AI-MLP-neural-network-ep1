@@ -6,6 +6,8 @@ NUM_EPOCHS     ?= 20
 LEARN_RATE     ?= 0.015
 HIDDEN_NEURONS ?= 32
 MOMENTUM ?= 0.5
+TARGET_MSE ?=
+PATIENCE ?=
 
 .PHONY: help main lab_logic_gates
 
@@ -29,6 +31,8 @@ main:
 	LEARN_RATE=$(LEARN_RATE) \
 	HIDDEN_NEURONS=$(HIDDEN_NEURONS) \
 	MOMENTUM=$(MOMENTUM) \
+	TARGET_MSE=$(TARGET_MSE) \
+	PATIENCE=$(PATIENCE) \
 	python3 -m src.main
 
 lab_logic_gates:

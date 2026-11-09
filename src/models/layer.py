@@ -53,7 +53,6 @@ class Layer:
         ]
         self.last_delta_bias = [0.0 for _ in range(len(self.weights))]
 
-
     # ================
 
     # ====
@@ -157,3 +156,23 @@ class Layer:
                 self.last_delta_weights[i_neuron][j_input] = delta_w
 
         return current_layer_deltas
+
+    # ====
+
+    # ====
+
+    def get_weights(self) -> dict:
+        """
+        Retorna uma cópia dos pesos e biases da camada.
+        """
+        return {
+            "bias": self.bias[:],
+            "weights": [w[:] for w in self.weights],
+        }
+
+    def set_weights(self, state: dict) -> None:
+        """
+        Restaura os pesos e biases da camada a partir de um snapshot.
+        """
+        self.bias = state["bias"][:]
+        self.weights = [w[:] for w in state["weights"]]

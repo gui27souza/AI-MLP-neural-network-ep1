@@ -1,20 +1,5 @@
-## MLP
-
-- Adicionar teto de execução com threshold de MSE
-    - Executar X épocas ou enquanto MSE for maior que Y
-
-
-## Docs
-
-- Melhorar documentação dos passos críticos do Backpropagation
-    - Adicionar fórmulas para melhor seguimento do entendimento
-
-
 ## Trazer da versão do colab
 
-2. Critérios de Parada e Early Stopping
-    - O que faz: Parar por MSE alvo (target_error) e parar quando o erro de teste parar de cair (patience), restaurando os melhores pesos observados.
-    - Onde entra: No Orchestrator e MLP.
 3. Exportação dos 5 Arquivos Oficiais de Entrega
     - O que faz: Gera a pasta saidas_oficiais/ com os arquivos que a professora exige no PDF:
         - hiperparametros.txt

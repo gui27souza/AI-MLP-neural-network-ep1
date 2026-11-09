@@ -41,10 +41,6 @@ class MLPPersister:
                 "hidden_neurons": [layer.num_neurons for layer in mlp.hidden_layers],
             },
             "metrics": metrics or {},
-            "num_inputs": mlp.num_inputs,
-            "num_outputs": mlp.num_outputs,
-            "learn_rate": mlp.learn_rate,
-            "momentum": mlp.momentum,
             "hidden_layers": [
                 {
                     "num_inputs": layer.num_inputs,
@@ -91,11 +87,17 @@ class MLPPersister:
             layer.bias = h_data["bias"]
             hidden_layers.append(layer)
 
+        hyp = data.get("hyperparameters", {})
+        num_inputs = hyp.get("num_inputs", data.get("num_inputs"))
+        num_outputs = hyp.get("num_outputs", data.get("num_outputs"))
+        learn_rate = hyp.get("learn_rate", data.get("learn_rate"))
+        momentum = hyp.get("momentum", data.get("momentum", 0.0))
+
         mlp = MLP(
-            num_inputs=data["num_inputs"],
-            num_outputs=data["num_outputs"],
-            learn_rate=data["learn_rate"],
-            momentum=data.get("momentum", data.get("hyperparameters", {}).get("momentum", 0.0)),
+            num_inputs=num_inputs,
+            num_outputs=num_outputs,
+            learn_rate=learn_rate,
+            momentum=momentum,
             hidden_layers=hidden_layers,
             output_activation=activation_func,
             output_deriv_activation=derivative_activation,
