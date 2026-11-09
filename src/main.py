@@ -11,6 +11,7 @@ from src.mlp_persister import MLPPersister
 NUM_EPOCHS = int(os.environ["NUM_EPOCHS"])
 LEARN_RATE = float(os.environ["LEARN_RATE"])
 HIDDEN_NEURONS = int(os.environ["HIDDEN_NEURONS"])
+MOMENTUM = float(os.environ["MOMENTUM"])
 
 
 def build_mlp(num_inputs: int, num_outputs: int) -> MLP:
@@ -30,6 +31,7 @@ def build_mlp(num_inputs: int, num_outputs: int) -> MLP:
         hidden_layers=[hidden_layer],
         output_activation=sigmoide_bipolar,
         output_deriv_activation=deriv_sigmoide_bipolar,
+        momentum=MOMENTUM,
     )
 
 
