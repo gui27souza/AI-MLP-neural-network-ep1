@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import random
 
 from .models import MLP
 
@@ -50,12 +51,20 @@ class Orchestrator:
         )
         print("-" * 68)
 
+        index = list(range(len(self.inputs)))
+
         for epoch in range(1, self.epochs + 1):
+
+            # Embaralhamento Estocástico
+            # Ajuda na fuga de mínimos locais
+            random.shuffle(index)
+            inputs_shuffled = [self.inputs[i] for i in index]
+            targets_shuffled = [self.targets[i] for i in index]
 
             # Executa a época padrão a padrão (ajuste de pesos via Backpropagation)
             self.mlp.run_epoch(
-                inputs_list=self.inputs,
-                targets=self.targets,
+                inputs_list=inputs_shuffled,
+                targets=targets_shuffled,
                 print_info=verbose_samples,
             )
 
