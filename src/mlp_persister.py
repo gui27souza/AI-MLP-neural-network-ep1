@@ -179,6 +179,12 @@ class MLPPersister:
                 "best_val_acc_epoch": best_val_acc_epoch,
                 "best_val_mse": round(best_val_mse, 5),
                 "best_val_mse_epoch": best_val_mse_epoch,
+                "history": {
+                    "train_mse": [round(x, 6) for x in orch.history.get("train_mse", [])],
+                    "train_acc": [round(x * 100, 2) for x in orch.history.get("train_acc", [])],
+                    "val_mse": [round(x, 6) for x in orch.history.get("val_mse", [])],
+                    "val_acc": [round(x * 100, 2) for x in orch.history.get("val_acc", [])],
+                },
             }
 
             hidden_desc = "h" + "_".join(str(layer.num_neurons) for layer in mlp.hidden_layers)
