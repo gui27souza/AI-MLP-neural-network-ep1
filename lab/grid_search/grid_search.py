@@ -77,10 +77,10 @@ if __name__ == "__main__":
     TARGET_MSE = 0.001
     MIN_ACC_THRESHOLD = 80.0
 
-    HIDDEN_NEURONS = [48, 64, 80]
-    VAL_RATIOS = [0.20, 0.30]
-    LEARN_RATE = [0.003, 0.005, 0.007]
-    MOMENTUM = [0.75, 0.80, 0.85]
+    HIDDEN_NEURONS = [80]
+    VAL_RATIOS = [0.30]
+    LEARN_RATE = [0.003]
+    MOMENTUM = [0.80]
     PATIENCE = [4]
 
     reporter = GridSearchReporter(output_dir=PATH)
