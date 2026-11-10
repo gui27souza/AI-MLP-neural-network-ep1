@@ -1,0 +1,4 @@
+rodada,hidden_neurons,val_ratio,learn_rate,momentum,patience,epochs_exec,stopped_early,final_train_acc,final_val_acc,best_val_acc,best_val_acc_epoch,final_val_mse,best_val_mse,duracao_s,checkpoint
+1,48,0.3,0.003,0.8,4,32,True,99.25,83.38,84.13,26,0.0448,0.04414,80.65,gs_h48_acc84.1_mse0.045_e28.json
+2,64,0.3,0.003,0.8,4,27,True,99.14,83.63,85.14,23,0.04607,0.04607,91.09,gs_h64_acc85.1_mse0.047_e23.json
+3,80,0.3,0.003,0.8,4,27,True,99.03,82.87,83.63,19,0.04601,0.04601,119.86,gs_h80_acc83.6_mse0.047_e23.json
