@@ -441,7 +441,7 @@ class MLPEvaluator:
         saved_paths = {}
 
         # 1. Pesos Finais
-        final_v_mats, final_w_mat = self.mlp.to_fausett_matrices()
+        final_v_mats, final_w_mat = MLPPersister.to_fausett_matrices(self.mlp.get_weights())
 
         for idx, v_mat in enumerate(final_v_mats):
             v_name = "pesos_finais_V.csv" if len(final_v_mats) == 1 else f"pesos_finais_V{idx+1}.csv"
@@ -466,7 +466,7 @@ class MLPEvaluator:
 
         # 2. Pesos Iniciais
         if self.mlp.initial_weights is not None:
-            init_v_mats, init_w_mat = self.mlp.to_fausett_matrices(self.mlp.initial_weights)
+            init_v_mats, init_w_mat = MLPPersister.to_fausett_matrices(self.mlp.initial_weights)
 
             for idx, v_mat in enumerate(init_v_mats):
                 v_name = "pesos_iniciais_V.csv" if len(init_v_mats) == 1 else f"pesos_iniciais_V{idx+1}.csv"

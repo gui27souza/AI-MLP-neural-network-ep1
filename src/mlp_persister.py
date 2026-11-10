@@ -2,6 +2,8 @@ import os
 import json
 from datetime import datetime
 
+import numpy as np
+
 from src.models import (
     MLP,
     Layer,
@@ -206,3 +208,74 @@ class MLPPersister:
         except Exception as e:
             print(f"Não foi possível salvar o checkpoint do modelo: {e}")
             return None
+
+    @staticmethod
+    def to_fausett_matrices(
+        weights_state: dict,
+    ) -> tuple[list[np.ndarray], np.ndarray]:
+        """
+        Converte o dicionário de pesos e biases da rede no formato matricial de Fausett:
+        - Para cada camada escondida j: matriz V com dimensão (p, n + 1)
+          onde a coluna 0 é o bias (v_0j) e as colunas 1..n são os pesos (v_ij).
+        - Para a camada de saída k: matriz W com dimensão (m, p + 1)
+          onde a coluna 0 é o bias (w_0k) e as colunas 1..p são os pesos (w_jk).
+        """
+        hidden_matrices = []
+        for layer_state in weights_state["hidden_layers"]:
+            biases = layer_state["bias"]
+            weights = layer_state["weights"]
+            rows = []
+            for b, w_vec in zip(biases, weights):
+                rows.append([b] + list(w_vec))
+            hidden_matrices.append(np.array(rows, dtype=float))
+
+        out_biases = weights_state["output_layer"]["bias"]
+        out_weights = weights_state["output_layer"]["weights"]
+        out_rows = []
+        for b, w_vec in zip(out_biases, out_weights):
+            out_rows.append([b] + list(w_vec))
+        output_matrix = np.array(out_rows, dtype=float)
+
+        return hidden_matrices, output_matrix
+
+    @staticmethod
+    def from_fausett_matrices(
+        hidden_matrices: list[np.ndarray] | np.ndarray, output_matrix: np.ndarray
+    ) -> dict:
+        """
+        Reconstrói o dicionário de estado de pesos a partir das matrizes no formato de Fausett:
+        - Coluna 0 é interpretada como bias (v_0j ou w_0k).
+        - Colunas 1.. fim são interpretadas como pesos (v_ij ou w_jk).
+        """
+        if isinstance(hidden_matrices, np.ndarray) and hidden_matrices.ndim == 2:
+            hidden_matrices = [hidden_matrices]
+
+        hidden_layers_state = []
+        for v_mat in hidden_matrices:
+            v_arr = np.array(v_mat, dtype=float)
+            biases = v_arr[:, 0].tolist()
+            weights = v_arr[:, 1:].tolist()
+            hidden_layers_state.append({"bias": biases, "weights": weights})
+
+        out_arr = np.array(output_matrix, dtype=float)
+        out_biases = out_arr[:, 0].tolist()
+        out_weights = out_arr[:, 1:].tolist()
+
+        return {
+            "hidden_layers": hidden_layers_state,
+            "output_layer": {"bias": out_biases, "weights": out_weights},
+        }
+
+    @staticmethod
+    def load_initial_weights(filepath: str) -> dict:
+        """Carrega os pesos iniciais salvos de um arquivo JSON de checkpoint."""
+        with open(filepath, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        if "initial_weights" in data and data["initial_weights"]:
+            return data["initial_weights"]
+        if "hidden_layers" in data and "output_layer" in data:
+            return {
+                "hidden_layers": data["hidden_layers"],
+                "output_layer": data["output_layer"],
+            }
+        raise ValueError(f"Estrutura de pesos inválida no arquivo JSON: {filepath}")

@@ -1,6 +1,4 @@
 from typing import Callable
-import json
-import os
 import numpy as np
 
 from .layer import Layer
@@ -20,10 +18,10 @@ class MLP:
         weight_range: tuple[float, float] = (-0.2, 0.2),
         bias_range: tuple[float, float] = (-0.2, 0.2),
         momentum: float = 0.0,
-        initial_weights: dict | tuple | str | None = None,
+        initial_weights: dict | None = None,
     ):
         """
-        Inicializa a MLP.
+        MLP
 
         - A 'camada de entrada' não possui pesos ou neurônios (é apenas o vetor bruto de dados).
         - 'hidden_layers' define as camadas intermediárias de processamento. Podem ser 0 (lista vazia).
@@ -171,13 +169,11 @@ class MLP:
 
         # Propagação direta pelas camadas escondidas
         current_inputs: list[float] = inputs
-        current_outputs: list[float] = inputs
         for layer in self.hidden_layers:
-            current_outputs = layer.forward(current_inputs)
-            current_inputs = current_outputs
+            current_inputs = layer.forward(current_inputs)
 
         # Propagação direta para a camada de saída
-        outputs = self.output_layer.forward(current_outputs)
+        outputs = self.output_layer.forward(current_inputs)
 
         # Atualização dos pesos online
         self._update_weights(target, outputs)
@@ -207,33 +203,35 @@ class MLP:
         next_deltas = out_deltas
 
         # Atualização de pesos e biases da camada de saída
-        for i_neuron in range(self.output_layer.num_neurons):
-            delta_i = out_deltas[i_neuron]
+        # k_neuron: índice da unidade de saída k
+        for k_neuron in range(self.output_layer.num_neurons):
+            delta_k = out_deltas[k_neuron]
 
             # Correção do bias com Momentum
             # Δw_0k = α * δ_k + μ * Δw_0k(t-1)
-            delta_bias = (self.learn_rate * delta_i) + (
-                self.momentum * self.output_layer.last_delta_bias[i_neuron]
+            delta_bias = (self.learn_rate * delta_k) + (
+                self.momentum * self.output_layer.last_delta_bias[k_neuron]
             )
             # Atualização
             # w_0k = w_0k + Δw_0k
-            self.output_layer.bias[i_neuron] += delta_bias
-            self.output_layer.last_delta_bias[i_neuron] = delta_bias
+            self.output_layer.bias[k_neuron] += delta_bias
+            self.output_layer.last_delta_bias[k_neuron] = delta_bias
 
             # Correção dos pesos com Momentum
-            for j_input in range(self.output_layer.num_inputs):
+            # j_hidden: índice da unidade oculta anterior j
+            for j_hidden in range(self.output_layer.num_inputs):
 
                 # Δw_jk = α * δ_k * z_j + μ * Δw_jk(t-1)
-                x_j = self.output_layer.last_inputs[j_input]
-                delta_w = (self.learn_rate * delta_i * x_j) + (
+                z_j = self.output_layer.last_inputs[j_hidden]
+                delta_w = (self.learn_rate * delta_k * z_j) + (
                     self.momentum
-                    * self.output_layer.last_delta_weights[i_neuron][j_input]
+                    * self.output_layer.last_delta_weights[k_neuron][j_hidden]
                 )
 
                 # Atualização
                 # w_jk = w_jk + Δw_jk
-                self.output_layer.weights[i_neuron][j_input] += delta_w
-                self.output_layer.last_delta_weights[i_neuron][j_input] = delta_w
+                self.output_layer.weights[k_neuron][j_hidden] += delta_w
+                self.output_layer.last_delta_weights[k_neuron][j_hidden] = delta_w
 
         # Propaga o erro pelas camadas escondidas (em ordem reversa)
         for _, layer in reversed(list(enumerate(self.hidden_layers))):
@@ -277,93 +275,12 @@ class MLP:
         """Restaura a rede neural para os seus pesos iniciais e zera os deltas de momentum."""
         self.set_weights(self.initial_weights)
 
-    def set_initial_weights(self, weights: dict | tuple | str) -> None:
+    def set_initial_weights(self, weights: dict) -> None:
         """
-        Define e aplica os pesos iniciais da rede.
-        Aceita:
-        - dict: estado serializado {'hidden_layers': [...], 'output_layer': {...}}
-        - tuple: (hidden_matrices, output_matrix) no formato matricial de Fausett
-        - str: caminho para um arquivo JSON salvo
+        Define e aplica os pesos iniciais da rede a partir de um dicionário de estado.
         """
-        if isinstance(weights, str):
-            with open(weights, "r", encoding="utf-8") as f:
-                data = json.load(f)
-            if "initial_weights" in data and data["initial_weights"]:
-                state = data["initial_weights"]
-            elif "hidden_layers" in data and "output_layer" in data:
-                state = {
-                    "hidden_layers": data["hidden_layers"],
-                    "output_layer": data["output_layer"],
-                }
-            else:
-                raise ValueError(f"Estrutura de pesos inválida no arquivo JSON: {weights}")
-        elif isinstance(weights, (tuple, list)) and len(weights) == 2:
-            state = self.from_fausett_matrices(weights[0], weights[1])
-        elif isinstance(weights, dict):
-            state = weights
-        else:
-            raise TypeError(f"Tipo de pesos iniciais não suportado: {type(weights)}")
+        if not isinstance(weights, dict):
+            raise TypeError(f"Dicionário de pesos esperado, recebido: {type(weights)}")
 
-        self.set_weights(state)
+        self.set_weights(weights)
         self.initial_weights = self.get_weights()
-
-    def to_fausett_matrices(
-        self, weights_state: dict | None = None
-    ) -> tuple[list[np.ndarray], np.ndarray]:
-        """
-        Converte os pesos e biases da rede no formato matricial de Fausett:
-        - Para cada camada escondida j: matriz V com dimensão (p, n + 1)
-          onde a coluna 0 é o bias (v_0j) e as colunas 1..n são os pesos (v_ij).
-        - Para a camada de saída k: matriz W com dimensão (m, p + 1)
-          onde a coluna 0 é o bias (w_0k) e as colunas 1..p são os pesos (w_jk).
-
-        Retorna:
-          (hidden_matrices, output_matrix)
-        """
-        state = weights_state if weights_state is not None else self.get_weights()
-
-        hidden_matrices = []
-        for layer_state in state["hidden_layers"]:
-            biases = layer_state["bias"]
-            weights = layer_state["weights"]
-            rows = []
-            for b, w_vec in zip(biases, weights):
-                rows.append([b] + list(w_vec))
-            hidden_matrices.append(np.array(rows, dtype=float))
-
-        out_biases = state["output_layer"]["bias"]
-        out_weights = state["output_layer"]["weights"]
-        out_rows = []
-        for b, w_vec in zip(out_biases, out_weights):
-            out_rows.append([b] + list(w_vec))
-        output_matrix = np.array(out_rows, dtype=float)
-
-        return hidden_matrices, output_matrix
-
-    @classmethod
-    def from_fausett_matrices(
-        cls, hidden_matrices: list[np.ndarray] | np.ndarray, output_matrix: np.ndarray
-    ) -> dict:
-        """
-        Reconstrói o dicionário de estado de pesos a partir das matrizes no formato de Fausett:
-        - Coluna 0 é interpretada como bias (v_0j ou w_0k).
-        - Colunas 1.. fim são interpretadas como pesos (v_ij ou w_jk).
-        """
-        if isinstance(hidden_matrices, np.ndarray) and hidden_matrices.ndim == 2:
-            hidden_matrices = [hidden_matrices]
-
-        hidden_layers_state = []
-        for v_mat in hidden_matrices:
-            v_arr = np.array(v_mat, dtype=float)
-            biases = v_arr[:, 0].tolist()
-            weights = v_arr[:, 1:].tolist()
-            hidden_layers_state.append({"bias": biases, "weights": weights})
-
-        out_arr = np.array(output_matrix, dtype=float)
-        out_biases = out_arr[:, 0].tolist()
-        out_weights = out_arr[:, 1:].tolist()
-
-        return {
-            "hidden_layers": hidden_layers_state,
-            "output_layer": {"bias": out_biases, "weights": out_weights},
-        }
