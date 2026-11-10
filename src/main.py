@@ -24,6 +24,8 @@ TARGET_MSE = float(_target_mse_env) if _target_mse_env else None
 _patience_env = os.getenv("PATIENCE")
 PATIENCE = int(_patience_env) if _patience_env else None
 
+PRINT_INTERVAL = int(os.environ["PRINT_INTERVAL"])
+
 # =====
 
 
@@ -146,7 +148,7 @@ if __name__ == "__main__":
 
     # == Execução do treinamento com salvamento resiliente ====
     try:
-        orch.run(print_epochs_interval=max(1, int(NUM_EPOCHS / 10)))
+        orch.run(print_epochs_interval=PRINT_INTERVAL)
         print("")
         orch.print_results()
         print("")

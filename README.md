@@ -61,6 +61,7 @@ make main NUM_EPOCHS=30 LEARN_RATE=0.01
 | `MOMENTUM` | `0.5` | Fator de momentum para aceleração do gradiente |
 | `PATIENCE` | *(vazio)* | Número de épocas sem melhora na validação para interromper o treino |
 | `TARGET_MSE` | *(vazio)* | Erro Quadrático Médio alvo para parada antecipada |
+| `PRINT_INTERVAL` | `2` | Intervalo de épocas para exibição do progresso no terminal |
 
 ---
 
