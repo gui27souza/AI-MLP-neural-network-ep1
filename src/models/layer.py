@@ -161,6 +161,14 @@ class Layer:
 
     # ====
 
+    def reset_deltas(self) -> None:
+        """Zera os acumuladores de variação anterior de pesos e bias (momentum)."""
+        self.last_delta_weights = [
+            [0.0 for _ in range(self.num_inputs)]
+            for _ in range(self.num_neurons)
+        ]
+        self.last_delta_bias = [0.0 for _ in range(self.num_neurons)]
+
     def get_weights(self) -> dict:
         """
         Retorna uma cópia dos pesos e biases da camada.
@@ -176,3 +184,4 @@ class Layer:
         """
         self.bias = state["bias"][:]
         self.weights = [w[:] for w in state["weights"]]
+        self.reset_deltas()

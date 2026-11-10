@@ -8,6 +8,7 @@ from src.models import Layer, MLP
 from src.orchestrator import Orchestrator
 from src.mlp_persister import MLPPersister
 from lab.grid_search.reporter import GridSearchReporter
+from lab.grid_search.initial_weights import get_grid_search_initial_weights
 
 # =====
 
@@ -29,6 +30,12 @@ def pipeline(
         derivative_activation=deriv_sigmoide_bipolar,
     )
 
+    init_weights = get_grid_search_initial_weights(
+        hidden_neurons=hidden_neurons,
+        num_inputs=len(train_x[0]),
+        num_outputs=len(train_y[0]),
+    )
+
     mlp = MLP(
         num_inputs=len(train_x[0]),
         num_outputs=len(train_y[0]),
@@ -37,6 +44,7 @@ def pipeline(
         output_activation=sigmoide_bipolar,
         output_deriv_activation=deriv_sigmoide_bipolar,
         momentum=momentum,
+        initial_weights=init_weights,
     )
 
     orch = Orchestrator(

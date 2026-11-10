@@ -39,6 +39,9 @@ class Orchestrator:
         self.stopped_early = False
         self.stop_reason = ""
 
+        # Preserva os pesos iniciais antes da primeira época para reprodutibilidade
+        self.initial_weights = getattr(self.mlp, "initial_weights", None) or self.mlp.get_weights()
+
         # Histórico de métricas coletadas ao fim de cada época
         self.history: dict[str, list[float]] = {
             "train_mse": [],

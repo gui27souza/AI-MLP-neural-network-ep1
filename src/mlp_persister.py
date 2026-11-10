@@ -42,6 +42,7 @@ class MLPPersister:
                 "hidden_neurons": [layer.num_neurons for layer in mlp.hidden_layers],
             },
             "metrics": metrics or {},
+            "initial_weights": getattr(mlp, "initial_weights", None),
             "hidden_layers": [
                 {
                     "num_inputs": layer.num_inputs,
@@ -107,6 +108,9 @@ class MLPPersister:
         # Sobrescreve os pesos e bias da camada de saída com os salvos
         mlp.output_layer.weights = data["output_layer"]["weights"]
         mlp.output_layer.bias = data["output_layer"]["bias"]
+
+        if "initial_weights" in data and data["initial_weights"]:
+            mlp.initial_weights = data["initial_weights"]
 
         print(f"Modelo carregado com sucesso de: {filepath}")
 
