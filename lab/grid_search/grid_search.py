@@ -49,7 +49,7 @@ def pipeline(
         patience=patience,
     )
 
-    orch.run(print_epochs_interval=2)
+    orch.run(print_epochs_interval=5)
     print("")
     orch.print_results()
     print("")
@@ -119,3 +119,4 @@ if __name__ == "__main__":
     # == Exportar Resumo e Exibir Ranking ====
     reporter.save_csv()
     reporter.print_ranking(top_k=10)
+    reporter.finalize_directory_name()

@@ -122,3 +122,37 @@ class GridSearchReporter:
             f"  Checkpoint: {best['checkpoint']}"
         )
         print("=" * 88)
+
+    def finalize_directory_name(self) -> str:
+        """Renomeia o diretorio de saida para incluir a melhor arquitetura e acuracia alcancadas."""
+
+        if not self.records:
+            return self.output_dir
+
+        clean_dir = self.output_dir.rstrip("/")
+        if not os.path.exists(clean_dir):
+            return self.output_dir
+
+        ranked = sorted(
+            self.records,
+            key=lambda r: (r["best_val_acc"], -r["best_val_mse"]),
+            reverse=True,
+        )
+        best = ranked[0]
+        best_h = best["hidden_neurons"]
+        best_acc = best["best_val_acc"]
+
+        parent_dir = os.path.dirname(clean_dir)
+        current_name = os.path.basename(clean_dir)
+
+        prefix = f"h{best_h}_acc{best_acc:.1f}_"
+        if current_name.startswith(prefix):
+            return self.output_dir
+
+        new_name = f"{prefix}{current_name}"
+        new_path = os.path.join(parent_dir, new_name)
+
+        os.rename(clean_dir, new_path)
+        self.output_dir = new_path
+        print(f"\nDiretorio renomeado com a melhor marca: {new_path}")
+        return new_path
