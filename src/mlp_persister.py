@@ -183,8 +183,9 @@ class MLPPersister:
 
             hidden_desc = "h" + "_".join(str(layer.num_neurons) for layer in mlp.hidden_layers)
             filename = (
-                f"{prefix}_{hidden_desc}_e{saved_epoch}"
-                f"_acc{saved_val_acc_pct:.1f}_mse{saved_val_mse:.3f}.json"
+                f"{prefix}_{hidden_desc}"
+                f"_acc{saved_val_acc_pct:.1f}_mse{saved_val_mse:.3f}"
+                f"_e{saved_epoch}.json"
             )
             filepath = os.path.join(dir_path, filename)
 
