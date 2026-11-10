@@ -24,6 +24,7 @@ _patience_env = os.getenv("PATIENCE")
 PATIENCE = int(_patience_env) if _patience_env else None
 
 PRINT_INTERVAL = int(os.environ["PRINT_INTERVAL"])
+VAL_RATIO = float(os.environ["VAL_RATIO"])
 
 # =====
 
@@ -52,7 +53,7 @@ def build_mlp(num_inputs: int, num_outputs: int) -> MLP:
 if __name__ == "__main__":
 
     # == Carregamento dos dados ====
-    train_x, train_y, test_x, test_y, _ = DatasetLoader.load_caracteres_completo()
+    train_x, train_y, test_x, test_y, _ = DatasetLoader.load_caracteres_completo(val_ratio=VAL_RATIO)
 
     # == Construção do modelo ====
     mlp = build_mlp(num_inputs=len(train_x[0]), num_outputs=len(train_y[0]))

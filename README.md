@@ -51,6 +51,9 @@ make main NUM_EPOCHS=30 TARGET_MSE=0.01
 
 # Exemplo 4: Alterar a taxa de aprendizado
 make main NUM_EPOCHS=30 LEARN_RATE=0.01
+
+# Exemplo 5: Alterar a proporção do conjunto de validação para 20%
+make main NUM_EPOCHS=40 VAL_RATIO=0.2
 ```
 
 | Parâmetro | Padrão | Descrição |
@@ -62,6 +65,7 @@ make main NUM_EPOCHS=30 LEARN_RATE=0.01
 | `PATIENCE` | *(vazio)* | Número de épocas sem melhora na validação para interromper o treino |
 | `TARGET_MSE` | *(vazio)* | Erro Quadrático Médio alvo para parada antecipada |
 | `PRINT_INTERVAL` | `2` | Intervalo de épocas para exibição do progresso no terminal |
+| `VAL_RATIO` | `0.1` | Proporção do dataset reservada para validação/teste (ex: 0.1 = 10%, 0.2 = 20%) |
 
 ---
 

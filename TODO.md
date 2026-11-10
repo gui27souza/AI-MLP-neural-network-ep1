@@ -15,9 +15,6 @@
 
 ## Refinamentos
 
-- Ajuste da Proporção Treino x Validação:
-    - Testar variações além do atual 90/10 (ex: 80/20 ou 75/25) para ter um conjunto de validação estatisticamente mais representativo que as 130 amostras atuais.
-
 - Decaimento da Taxa de Aprendizado (Learning Rate Decay):
     - Implementar a redução do eta ao longo das épocas ( eta(t) = eta_0/(1 + k * t) ) ou a redução em platôs (reduzir eta pela metade caso a validação estagne por 2 épocas).
 

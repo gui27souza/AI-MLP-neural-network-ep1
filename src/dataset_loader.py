@@ -49,7 +49,7 @@ class DatasetLoader:
     def load_caracteres_completo(
         filepath_inputs: str = "data/CARACTERES COMPLETO/X.txt",
         filepath_labels: str = "data/CARACTERES COMPLETO/Y_letra.txt",
-        num_test_samples: int = 130,
+        val_ratio: float = 0.1,
     ) -> tuple[
         list[list[float]],  # train_inputs
         list[list[float]],  # train_targets
@@ -62,8 +62,7 @@ class DatasetLoader:
         
         - Trata o arquivo X.txt descartando a 121ª coluna (gerada por vírgula residual ao final de cada linha).
         - Converte cada letra de Y_letra.txt em um vetor One-Hot Bipolar de 26 posições (-1.0 e +1.0).
-        - Separa estritamente as últimas 'num_test_samples' (padrão 130) para teste,
-            restando as 1196 primeiras amostras para treinamento.
+        - Separa as últimas amostras para teste/validação com base na proporção 'val_ratio' (ex: 0.1 = 10%).
         """
         # Lê as entradas descartando a vírgula residual no fim de cada linha (mantém 120 pixels)
         with open(filepath_inputs, "r", encoding="utf-8-sig") as f:
@@ -90,6 +89,7 @@ class DatasetLoader:
             all_targets.append(target_vector)
 
         # Separação formal entre Treino e Teste
+        num_test_samples = int(len(all_inputs) * val_ratio)
         num_train_samples = len(all_inputs) - num_test_samples
 
         train_inputs = all_inputs[:num_train_samples]

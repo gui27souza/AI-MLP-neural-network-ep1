@@ -9,6 +9,7 @@ MOMENTUM ?= 0.5
 TARGET_MSE ?=
 PATIENCE ?=
 PRINT_INTERVAL ?= 2
+VAL_RATIO ?= 0.1
 
 .PHONY: help main lab_logic_gates grid_search
 
@@ -21,7 +22,7 @@ help:
 	@echo "== AI MLP Neural Network =="
 	@echo
 	@echo "====> main -> executa o treinamento no CARACTERES COMPLETO"
-	@echo "      Ex: make main NUM_EPOCHS=50 LEARN_RATE=0.02 HIDDEN_NEURONS=64 MOMENTUM=0.7 PRINT_INTERVAL=1"
+	@echo "      Ex: make main NUM_EPOCHS=50 LEARN_RATE=0.02 HIDDEN_NEURONS=64 MOMENTUM=0.7 PRINT_INTERVAL=1 VAL_RATIO=0.2"
 	@echo
 	@echo "====> lab_logic_gates -> executa as portas lógicas"
 	@echo "      Ex: make lab_logic_gates NUM_EPOCHS=500"
@@ -38,6 +39,7 @@ main:
 	TARGET_MSE=$(TARGET_MSE) \
 	PATIENCE=$(PATIENCE) \
 	PRINT_INTERVAL=$(PRINT_INTERVAL) \
+	VAL_RATIO=$(VAL_RATIO) \
 	python3 -m src.main
 
 lab_logic_gates:
