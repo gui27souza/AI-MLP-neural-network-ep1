@@ -19,6 +19,7 @@ def pipeline(
     train_x, train_y, test_x, test_y,
     epochs, target_mse,
     hidden_neurons, learn_rate, momentum, patience,
+    min_acc_threshold: float | None = None,
 ) -> tuple[Orchestrator, str | None]:
 
     hidden_layer = Layer(
@@ -54,7 +55,19 @@ def pipeline(
     orch.print_results()
     print("")
 
-    saved_file = MLPPersister.save_checkpoint(orch, dir_path=PATH, prefix="gs")
+    best_val_acc_pct = (orch.best_val_acc * 100) if orch.best_weights is not None else (
+        (orch.history["val_acc"][-1] * 100) if orch.history["val_acc"] else 0.0
+    )
+
+    if min_acc_threshold is not None and best_val_acc_pct < min_acc_threshold:
+        print(
+            f"Checkpoint descartado: acuracia ({best_val_acc_pct:.2f}%) "
+            f"inferior ao corte de {min_acc_threshold:.1f}%."
+        )
+        saved_file = None
+    else:
+        saved_file = MLPPersister.save_checkpoint(orch, dir_path=PATH, prefix="gs")
+
     return orch, saved_file
 
 
@@ -62,11 +75,12 @@ if __name__ == "__main__":
 
     MAX_EPOCHS = 150
     TARGET_MSE = 0.001
+    MIN_ACC_THRESHOLD = 80.0
 
-    HIDDEN_NEURONS = [48, 96]
-    VAL_RATIOS = [0.15, 0.3]
-    LEARN_RATE = [0.005]
-    MOMENTUM = [0.8]
+    HIDDEN_NEURONS = [48, 64, 80]
+    VAL_RATIOS = [0.20, 0.30]
+    LEARN_RATE = [0.003, 0.005, 0.007]
+    MOMENTUM = [0.75, 0.80, 0.85]
     PATIENCE = [4]
 
     reporter = GridSearchReporter(output_dir=PATH)
@@ -107,6 +121,7 @@ if __name__ == "__main__":
                             learn_rate=learn_rate,
                             momentum=momentum,
                             patience=patience,
+                            min_acc_threshold=MIN_ACC_THRESHOLD,
                         )
 
                         reporter.record_trial(

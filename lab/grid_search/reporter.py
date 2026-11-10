@@ -123,7 +123,7 @@ class GridSearchReporter:
             f"  Hidden={best['hidden_neurons']} | Ratio={ratio_best} | LR={best['learn_rate']} | Momentum={best['momentum']} | Patience={best['patience']}\n"
             f"  Acuracia de Validacao: {best['best_val_acc']:.2f}% (alcancada na epoca {best['best_val_acc_epoch']})\n"
             f"  MSE de Validacao: {best['best_val_mse']:.5f}\n"
-            f"  Checkpoint: {best['checkpoint']}"
+            f"  Checkpoint: {best['checkpoint'] or 'Nao salvo (< threshold)'}"
         )
         print("=" * 88)
 
