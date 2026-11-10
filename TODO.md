@@ -13,11 +13,6 @@
 - Visualização Gráfica e Matriz de Confusão (para o vídeo/slides)
     - O que faz: Gráficos de curvas de aprendizado (MSE e Acurácia) e a matriz de confusão 26 × 26 das letras.
 
-## Refatoramentos
-
-- Refatorar src.main.save_model_checkpoint
-    - Essa lógica toda deveria estar mais limpa e no mlp_persister
-
 ## Refinamentos
 
 - Critério de Seleção do Modelo (Acurácia x MSE):
