@@ -6,19 +6,20 @@ from src.dataset_loader import DatasetLoader
 from src.funcs import sigmoide_bipolar, deriv_sigmoide_bipolar
 from src.models import Layer, MLP
 from src.orchestrator import Orchestrator
-
-from src.main import save_model_checkpoint
+from src.mlp_persister import MLPPersister
+from lab.grid_search.reporter import GridSearchReporter
 
 # =====
 
 INIT_TIME = datetime.now().strftime("%Y_%m_%d_%H_%M")
 PATH = f"models/grid_search/{INIT_TIME}/"
 
+
 def pipeline(
     train_x, train_y, test_x, test_y,
     epochs, target_mse,
-    hidden_neurons, learn_rate, momentum, patience
-):
+    hidden_neurons, learn_rate, momentum, patience,
+) -> tuple[Orchestrator, str | None]:
 
     hidden_layer = Layer(
         num_inputs=len(train_x[0]),
@@ -52,10 +53,9 @@ def pipeline(
     print("")
     orch.print_results()
     print("")
-    save_model_checkpoint(
-        mlp, orch,
-        path=PATH,
-    )
+
+    saved_file = MLPPersister.save_checkpoint(orch, dir_path=PATH, prefix="gs")
+    return orch, saved_file
 
 
 if __name__ == "__main__":
@@ -70,6 +70,8 @@ if __name__ == "__main__":
 
     # == Carregamento dos dados ====
     train_x, train_y, test_x, test_y, _ = DatasetLoader.load_caracteres_completo()
+
+    reporter = GridSearchReporter(output_dir=PATH)
 
     total_combinations = (
         len(HIDDEN_NEURONS) *
@@ -92,14 +94,28 @@ if __name__ == "__main__":
                         f"P={patience}"
                     )
 
-                    pipeline(
+                    orch, saved_file = pipeline(
                         train_x, train_y, test_x, test_y,
                         epochs=MAX_EPOCHS,
                         target_mse=TARGET_MSE,
                         hidden_neurons=hidden_neurons,
                         learn_rate=learn_rate,
                         momentum=momentum,
-                        patience=patience
+                        patience=patience,
+                    )
+
+                    reporter.record_trial(
+                        round_num=current,
+                        hidden_neurons=hidden_neurons,
+                        learn_rate=learn_rate,
+                        momentum=momentum,
+                        patience=patience,
+                        orch=orch,
+                        checkpoint_path=saved_file,
                     )
 
                     current += 1
+
+    # == Exportar Resumo e Exibir Ranking ====
+    reporter.save_csv()
+    reporter.print_ranking(top_k=10)

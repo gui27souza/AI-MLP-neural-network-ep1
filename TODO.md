@@ -19,10 +19,6 @@
     - Mudar o salvamento do `best_model` e o acionamento do Early Stopping para focar na maior Acurácia de Validação.
     - Usar o menor MSE de Validação como critério de desempate caso haja empate na acurácia.
 
-- Script de Grid Search (Busca Automática):
-    - Criar o script utilitário que itera sobre combinações de hiper-parâmetros
-    - Executar o treino para cada par e salvar no JSON apenas a melhor combinação final
-
 - Ajuste da Proporção Treino x Validação:
     - Testar variações além do atual 90/10 (ex: 80/20 ou 75/25) para ter um conjunto de validação estatisticamente mais representativo que as 130 amostras atuais.
 

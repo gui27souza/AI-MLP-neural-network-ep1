@@ -10,7 +10,7 @@ TARGET_MSE ?=
 PATIENCE ?=
 PRINT_INTERVAL ?= 2
 
-.PHONY: help main lab_logic_gates
+.PHONY: help main lab_logic_gates grid_search
 
 # ==============================================================================
 #  Execução
@@ -26,6 +26,9 @@ help:
 	@echo "====> lab_logic_gates -> executa as portas lógicas"
 	@echo "      Ex: make lab_logic_gates NUM_EPOCHS=500"
 	@echo
+	@echo "====> grid_search -> executa a busca em grade de hiperparâmetros"
+	@echo "      Ex: make grid_search"
+	@echo
 
 main:
 	@NUM_EPOCHS=$(NUM_EPOCHS) \
@@ -40,3 +43,6 @@ main:
 lab_logic_gates:
 	@NUM_EPOCHS=$(NUM_EPOCHS) \
 	python3 -m lab.logic_gates
+
+grid_search:
+	@python3 -m lab.grid_search.grid_search
