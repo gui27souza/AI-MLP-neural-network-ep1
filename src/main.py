@@ -29,17 +29,22 @@ VAL_RATIO = float(os.environ["VAL_RATIO"])
 # =====
 
 
-def build_mlp(num_inputs: int, num_outputs: int) -> MLP:
-    """Instancia a arquitetura da rede neural para classificação dos caracteres."""
+if __name__ == "__main__":
 
+    # == Carregamento dos dados ====
+    train_x, train_y, test_x, test_y, _ = DatasetLoader.load_caracteres_completo(val_ratio=VAL_RATIO)
+
+    num_inputs = len(train_x[0])
+    num_outputs = len(train_y[0])
+
+    # == Construção do modelo ====
     hidden_layer = Layer(
         num_inputs=num_inputs,
         num_neurons=HIDDEN_NEURONS,
         activation_func=sigmoide_bipolar,
         derivative_activation=deriv_sigmoide_bipolar,
     )
-
-    return MLP(
+    mlp = MLP(
         num_inputs=num_inputs,
         num_outputs=num_outputs,
         learn_rate=LEARN_RATE,
@@ -48,15 +53,6 @@ def build_mlp(num_inputs: int, num_outputs: int) -> MLP:
         output_deriv_activation=deriv_sigmoide_bipolar,
         momentum=MOMENTUM,
     )
-
-
-if __name__ == "__main__":
-
-    # == Carregamento dos dados ====
-    train_x, train_y, test_x, test_y, _ = DatasetLoader.load_caracteres_completo(val_ratio=VAL_RATIO)
-
-    # == Construção do modelo ====
-    mlp = build_mlp(num_inputs=len(train_x[0]), num_outputs=len(train_y[0]))
 
     # == Preparação do orquestrador ====
     orch = Orchestrator(
