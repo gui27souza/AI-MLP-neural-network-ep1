@@ -51,7 +51,7 @@ class Layer:
             [0.0 for _ in range(num_inputs)]
             for _ in range(num_neurons)
         ]
-        self.last_delta_bias = [0.0 for _ in range(len(self.weights))]
+        self.last_delta_bias = [0.0 for _ in range(num_neurons)]
 
     # ================
 
@@ -80,7 +80,7 @@ class Layer:
 
         # Itera pelos neurônios, calculando o somatório ponderado + bias e aplicando f(...)
         outputs: list[float] = []
-        for i_neuron in range(len(self.weights)):
+        for i_neuron in range(self.num_neurons):
 
             # Somatório inicial com bias
             # net_i = b_i + Σ_j (x_j * w_ij)
