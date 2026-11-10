@@ -111,6 +111,8 @@ class MLPPersister:
 
         if "initial_weights" in data and data["initial_weights"]:
             mlp.initial_weights = data["initial_weights"]
+        else:
+            mlp.initial_weights = None
 
         print(f"Modelo carregado com sucesso de: {filepath}")
 

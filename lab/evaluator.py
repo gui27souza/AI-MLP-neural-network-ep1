@@ -1,8 +1,11 @@
+import csv
 import json
 import os
 import shutil
 import sys
 from collections import defaultdict
+
+import numpy as np
 
 from src.dataset_loader import DatasetLoader
 from src.funcs import sigmoide_bipolar, deriv_sigmoide_bipolar
@@ -96,7 +99,10 @@ class MLPEvaluator:
         total_correct = 0
         total_squared_error = 0.0
 
-        for x, target in zip(test_x, test_y):
+        continuous_rows = []
+        discrete_rows = []
+
+        for sample_idx, (x, target) in enumerate(zip(test_x, test_y)):
             output = self.mlp.predict(x)
 
             actual_idx = max(range(len(target)), key=lambda i: target[i])
@@ -112,11 +118,30 @@ class MLPEvaluator:
             sample_mse = sum((t - o) ** 2 for t, o in zip(target, output)) / len(target)
             total_squared_error += sample_mse
 
-            if actual_idx == pred_idx:
+            is_correct = (actual_idx == pred_idx)
+            if is_correct:
                 total_correct += 1
                 class_correct[actual_label] += 1
             else:
                 confusions[(actual_label, pred_label)] += 1
+
+            continuous_rows.append({
+                "sample_idx": sample_idx,
+                "actual_label": actual_label,
+                "pred_label": pred_label,
+                "correct": int(is_correct),
+                "output": [float(val) for val in output],
+            })
+
+            discrete_vec = [-1.0] * num_classes
+            discrete_vec[pred_idx] = 1.0
+            discrete_rows.append({
+                "sample_idx": sample_idx,
+                "actual_label": actual_label,
+                "pred_label": pred_label,
+                "correct": int(is_correct),
+                "output": discrete_vec,
+            })
 
         overall_acc = (total_correct / num_samples) * 100 if num_samples > 0 else 0.0
         overall_mse = total_squared_error / num_samples if num_samples > 0 else 0.0
@@ -142,6 +167,8 @@ class MLPEvaluator:
             "class_accuracies": class_accuracies,
             "top_confusions": sorted_confusions,
             "val_ratio": ratio,
+            "continuous_predictions": continuous_rows,
+            "discrete_predictions": discrete_rows,
         }
 
     def _build_report_text(self, eval_results: dict) -> str:
@@ -331,6 +358,228 @@ class MLPEvaluator:
         print(f"Matriz de confusao salva em: {output_path}")
         return output_path
 
+    def _export_hyperparameters(self, output_dir: str, eval_results: dict | None = None) -> str:
+        """Gera o arquivo hiperparametros.txt com todos os parametros da rede e resultados."""
+        filepath = os.path.join(output_dir, "hiperparametros.txt")
+
+        hp = self.raw_data.get("hyperparameters", {})
+        training_params = self.metrics.get("training_params", {})
+        stopping_info = self.metrics.get("stopping_info", {})
+        ds_info = self.metrics.get("dataset_info", {})
+
+        learn_rate = hp.get("learn_rate", getattr(self.mlp, "learn_rate", "N/A"))
+        momentum = hp.get("momentum", getattr(self.mlp, "momentum", "N/A"))
+        num_inputs = hp.get("num_inputs", self.mlp.num_inputs)
+        num_outputs = hp.get("num_outputs", self.mlp.num_outputs)
+        hidden_neurons = hp.get("hidden_neurons", [layer.num_neurons for layer in self.mlp.hidden_layers])
+
+        max_epochs = training_params.get("max_epochs", "N/A")
+        target_mse = training_params.get("target_mse", "N/A")
+        patience = training_params.get("patience", "N/A")
+        epochs_executed = self.metrics.get("epochs_executed", len(self.history.get("train_mse", [])))
+        duration = self.metrics.get("duration_seconds", "N/A")
+
+        train_samples = ds_info.get("train_samples", "N/A")
+        val_samples = ds_info.get("val_samples", "N/A")
+        val_ratio = eval_results.get("val_ratio", self.get_val_ratio()) if eval_results else self.get_val_ratio()
+
+        train_mse = self.metrics.get("train_mse", "N/A")
+        train_acc = self.metrics.get("train_acc", "N/A")
+        val_mse = self.metrics.get("val_mse", "N/A")
+        val_acc = self.metrics.get("val_acc", "N/A")
+
+        test_mse = eval_results.get("overall_mse", "N/A") if eval_results else "N/A"
+        test_acc = eval_results.get("overall_accuracy", "N/A") if eval_results else "N/A"
+
+        lines = [
+            "=" * 78,
+            "                    CONFIGURACAO DE HIPERPARAMETROS DO MODELO",
+            "=" * 78,
+            f"Modelo               : {self.model_filename}",
+            f"Data de Geracao      : {self.raw_data.get('created_at', 'N/A')}",
+            f"Tempo de Treinamento : {duration:.2f}s" if isinstance(duration, (int, float)) else f"Tempo de Treinamento : {duration}",
+            "",
+            "[1. ARQUITETURA DA REDE]",
+            f"  - Entradas (n)              : {num_inputs} (caracteres 10x12 normalizados [-1, 1])",
+            f"  - Camada(s) Oculta(s) (p)   : {hidden_neurons} neuronios",
+            f"  - Saidas (m)                : {num_outputs} neuronios (classes A-Z)",
+            "  - Funcao de Ativacao        : Sigmoide Bipolar (faixa [-1, 1])",
+            "  - Derivada da Ativacao      : f'(x) = 0.5 * (1 + f(x)) * (1 - f(x))",
+            "",
+            "[2. HIPERPARAMETROS DE TREINAMENTO]",
+            f"  - Taxa de Aprendizado (eta) : {learn_rate}",
+            f"  - Termo de Momento (alpha)  : {momentum}",
+            f"  - Maximo de Epocas          : {max_epochs}",
+            f"  - Epocas Executadas         : {epochs_executed}",
+            f"  - Criterio de Parada        : Early Stopping (Paciencia={patience}, Min Delta MSE={target_mse})",
+            f"  - Parada Acionada           : {stopping_info.get('stopped_early', False)}",
+            f"  - Motivo da Parada          : {stopping_info.get('stop_reason', 'N/A')}",
+            f"  - Epoca do Melhor Modelo    : {stopping_info.get('saved_epoch', 'N/A')}",
+            "",
+            "[3. DADOS E AMOSTRAGEM]",
+            "  - Dataset                   : caracteres-completo (EACH-USP)",
+            f"  - Amostras de Treinamento   : {train_samples}",
+            f"  - Amostras de Validacao     : {val_samples} (Ratio={val_ratio})",
+            f"  - Amostras de Teste         : {eval_results.get('num_samples', 'N/A') if eval_results else 'N/A'}",
+            "",
+            "[4. DESEMPENHO ALCANCADO]",
+            f"  - MSE de Treinamento        : {train_mse:.6f}" if isinstance(train_mse, (int, float)) else f"  - MSE de Treinamento        : {train_mse}",
+            f"  - Acuracia de Treinamento   : {train_acc:.2f}%" if isinstance(train_acc, (int, float)) else f"  - Acuracia de Treinamento   : {train_acc}",
+            f"  - MSE de Validacao          : {val_mse:.6f}" if isinstance(val_mse, (int, float)) else f"  - MSE de Validacao          : {val_mse}",
+            f"  - Acuracia de Validacao     : {val_acc:.2f}%" if isinstance(val_acc, (int, float)) else f"  - Acuracia de Validacao     : {val_acc}",
+            f"  - MSE de Teste              : {test_mse:.6f}" if isinstance(test_mse, (int, float)) else f"  - MSE de Teste              : {test_mse}",
+            f"  - Acuracia de Teste         : {test_acc:.2f}%" if isinstance(test_acc, (int, float)) else f"  - Acuracia de Teste         : {test_acc}",
+            "=" * 78,
+        ]
+
+        with open(filepath, "w", encoding="utf-8") as f:
+            f.write("\n".join(lines) + "\n")
+        return filepath
+
+    def _export_weights(self, output_dir: str) -> dict[str, str]:
+        """Gera os arquivos de pesos no formato matricial de Fausett (V e W)."""
+        saved_paths = {}
+
+        # 1. Pesos Finais
+        final_v_mats, final_w_mat = self.mlp.to_fausett_matrices()
+
+        for idx, v_mat in enumerate(final_v_mats):
+            v_name = "pesos_finais_V.csv" if len(final_v_mats) == 1 else f"pesos_finais_V{idx+1}.csv"
+            v_path = os.path.join(output_dir, v_name)
+            np.savetxt(v_path, v_mat, delimiter=",", fmt="%.8f")
+            saved_paths[v_name] = v_path
+
+        w_path = os.path.join(output_dir, "pesos_finais_W.csv")
+        np.savetxt(w_path, final_w_mat, delimiter=",", fmt="%.8f")
+        saved_paths["pesos_finais_W.csv"] = w_path
+
+        combined_final_path = os.path.join(output_dir, "pesos_finais.csv")
+        with open(combined_final_path, "w", encoding="utf-8") as f:
+            for idx, v_mat in enumerate(final_v_mats):
+                suffix = f" {idx+1}" if len(final_v_mats) > 1 else ""
+                f.write(f"# MATRIZ V{suffix} (Camada Oculta: {v_mat.shape[0]} neuronios x {v_mat.shape[1]} colunas [col 0 = bias])\n")
+                np.savetxt(f, v_mat, delimiter=",", fmt="%.8f")
+                f.write("\n")
+            f.write(f"# MATRIZ W (Camada de Saida: {final_w_mat.shape[0]} neuronios x {final_w_mat.shape[1]} colunas [col 0 = bias])\n")
+            np.savetxt(f, final_w_mat, delimiter=",", fmt="%.8f")
+        saved_paths["pesos_finais.csv"] = combined_final_path
+
+        # 2. Pesos Iniciais
+        if self.mlp.initial_weights is not None:
+            init_v_mats, init_w_mat = self.mlp.to_fausett_matrices(self.mlp.initial_weights)
+
+            for idx, v_mat in enumerate(init_v_mats):
+                v_name = "pesos_iniciais_V.csv" if len(init_v_mats) == 1 else f"pesos_iniciais_V{idx+1}.csv"
+                v_path = os.path.join(output_dir, v_name)
+                np.savetxt(v_path, v_mat, delimiter=",", fmt="%.8f")
+                saved_paths[v_name] = v_path
+
+            w_init_path = os.path.join(output_dir, "pesos_iniciais_W.csv")
+            np.savetxt(w_init_path, init_w_mat, delimiter=",", fmt="%.8f")
+            saved_paths["pesos_iniciais_W.csv"] = w_init_path
+
+            combined_init_path = os.path.join(output_dir, "pesos_iniciais.csv")
+            with open(combined_init_path, "w", encoding="utf-8") as f:
+                for idx, v_mat in enumerate(init_v_mats):
+                    suffix = f" {idx+1}" if len(init_v_mats) > 1 else ""
+                    f.write(f"# MATRIZ V{suffix} INICIAL (Camada Oculta: {v_mat.shape[0]} neuronios x {v_mat.shape[1]} colunas [col 0 = bias])\n")
+                    np.savetxt(f, v_mat, delimiter=",", fmt="%.8f")
+                    f.write("\n")
+                f.write(f"# MATRIZ W INICIAL (Camada de Saida: {init_w_mat.shape[0]} neuronios x {init_w_mat.shape[1]} colunas [col 0 = bias])\n")
+                np.savetxt(f, init_w_mat, delimiter=",", fmt="%.8f")
+            saved_paths["pesos_iniciais.csv"] = combined_init_path
+        else:
+            dummy_init_path = os.path.join(output_dir, "pesos_iniciais.csv")
+            with open(dummy_init_path, "w", encoding="utf-8") as f:
+                f.write("# Pesos iniciais nao encontrados no arquivo .json (modelo gerado antes da atualizacao).\n")
+                f.write("# Para modelos gerados a partir desta versao, os pesos iniciais sao persistidos automaticamente.\n")
+            saved_paths["pesos_iniciais.csv"] = dummy_init_path
+
+        return saved_paths
+
+    def _export_history(self, output_dir: str) -> str:
+        """Gera o historico_erro_treinamento.csv com MSE e acuracia por epoca."""
+        filepath = os.path.join(output_dir, "historico_erro_treinamento.csv")
+        train_mse = self.history.get("train_mse", [])
+        val_mse = self.history.get("val_mse", [])
+        train_acc = self.history.get("train_acc", [])
+        val_acc = self.history.get("val_acc", [])
+
+        with open(filepath, "w", encoding="utf-8", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow(["epoca", "mse_treinamento", "mse_validacao", "acuracia_treinamento", "acuracia_validacao"])
+
+            num_epochs = max(len(train_mse), len(val_mse), len(train_acc), len(val_acc))
+            for i in range(num_epochs):
+                e = i + 1
+                tmse = f"{train_mse[i]:.6f}" if i < len(train_mse) else ""
+                vmse = f"{val_mse[i]:.6f}" if i < len(val_mse) else ""
+                tacc = f"{train_acc[i]:.2f}" if i < len(train_acc) else ""
+                vacc = f"{val_acc[i]:.2f}" if i < len(val_acc) else ""
+                writer.writerow([e, tmse, vmse, tacc, vacc])
+
+        return filepath
+
+    def _export_predictions(self, output_dir: str, eval_results: dict) -> tuple[str, str]:
+        """Gera os arquivos saidas_teste_continuas.csv e saidas_teste_discretas.csv."""
+        continuous_path = os.path.join(output_dir, "saidas_teste_continuas.csv")
+        discrete_path = os.path.join(output_dir, "saidas_teste_discretas.csv")
+
+        labels = eval_results.get("class_labels", [chr(ord("A") + i) for i in range(26)])
+        continuous_rows = eval_results.get("continuous_predictions", [])
+        discrete_rows = eval_results.get("discrete_predictions", [])
+
+        header_base = ["amostra", "classe_real", "classe_predita", "correto"]
+        header_outputs = [f"y_{c}" for c in labels]
+        full_header = header_base + header_outputs
+
+        # 1. Saidas Continuas
+        with open(continuous_path, "w", encoding="utf-8", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow(full_header)
+            for row in continuous_rows:
+                vals = [f"{v:.6f}" for v in row["output"]]
+                writer.writerow([row["sample_idx"], row["actual_label"], row["pred_label"], row["correct"]] + vals)
+
+        # 2. Saidas Discretas
+        with open(discrete_path, "w", encoding="utf-8", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow(full_header)
+            for row in discrete_rows:
+                vals = [f"{int(v)}" if isinstance(v, (int, float)) and v.is_integer() else f"{v}" for v in row["output"]]
+                writer.writerow([row["sample_idx"], row["actual_label"], row["pred_label"], row["correct"]] + vals)
+
+        return continuous_path, discrete_path
+
+    def export_official_deliverables(
+        self, eval_results: dict, output_dir: str | None = None
+    ) -> str:
+        """
+        Exporta os 5 arquivos oficiais exigidos para a entrega da disciplina na pasta saidas_oficiais/:
+        1. hiperparametros.txt
+        2. pesos_iniciais.csv (+ pesos_iniciais_V.csv, pesos_iniciais_W.csv)
+        3. pesos_finais.csv (+ pesos_finais_V.csv, pesos_finais_W.csv)
+        4. historico_erro_treinamento.csv
+        5. saidas_teste_continuas.csv e saidas_teste_discretas.csv
+        """
+        target_dir = output_dir if output_dir is not None else os.path.join(self.output_dir, "saidas_oficiais")
+        os.makedirs(target_dir, exist_ok=True)
+
+        self._export_hyperparameters(target_dir, eval_results)
+        self._export_weights(target_dir)
+        self._export_history(target_dir)
+        self._export_predictions(target_dir, eval_results)
+
+        print(f"\nArquivos oficiais de entrega gerados em: {target_dir}")
+        print("  - hiperparametros.txt")
+        print("  - pesos_iniciais.csv (+ pesos_iniciais_V.csv, pesos_iniciais_W.csv)")
+        print("  - pesos_finais.csv (+ pesos_finais_V.csv, pesos_finais_W.csv)")
+        print("  - historico_erro_treinamento.csv")
+        print("  - saidas_teste_continuas.csv")
+        print("  - saidas_teste_discretas.csv")
+
+        return target_dir
+
 
 if __name__ == "__main__":
     model_arg = os.environ.get("MODEL")
@@ -350,3 +599,4 @@ if __name__ == "__main__":
     evaluator.save_evaluation_report(results)
     evaluator.plot_learning_curves()
     evaluator.plot_confusion_matrix(results)
+    evaluator.export_official_deliverables(results)
