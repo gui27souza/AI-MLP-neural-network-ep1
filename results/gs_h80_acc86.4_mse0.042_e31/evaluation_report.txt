@@ -1,0 +1,34 @@
+==============================================================================
+  RELATORIO DE AVALIACAO DO MODELO: gs_h80_acc86.4_mse0.042_e31.json
+==============================================================================
+  Amostras de Teste/Validacao : 397 (Ratio=0.3)
+  Acuracia Geral              : 86.40%
+  MSE de Teste                : 0.04231
+------------------------------------------------------------------------------
+
+[TOP 5 CARACTERES COM MAIOR DIFICULDADE (Menor Acuracia)]
+  Letra 'O':  60.00% (9/15 acertos)
+  Letra 'R':  73.33% (11/15 acertos)
+  Letra 'W':  75.00% (12/16 acertos)
+  Letra 'X':  75.00% (12/16 acertos)
+  Letra 'J':  80.00% (12/15 acertos)
+
+[TOP 5 CARACTERES MAIS RECONHECIDOS (Maior Acuracia)]
+  Letra 'P': 100.00% (15/15 acertos)
+  Letra 'I': 100.00% (15/15 acertos)
+  Letra 'Z':  93.75% (15/16 acertos)
+  Letra 'Y':  93.75% (15/16 acertos)
+  Letra 'V':  93.75% (15/16 acertos)
+
+[MAIORES CONFUSOES OBSERVADAS (Real -> Predito)]
+  Real 'O' classificado como 'G': 3 ocorrencia(s)
+  Real 'X' classificado como 'K': 3 ocorrencia(s)
+  Real 'W' classificado como 'H': 2 ocorrencia(s)
+  Real 'J' classificado como 'I': 2 ocorrencia(s)
+  Real 'O' classificado como 'Q': 2 ocorrencia(s)
+  Real 'W' classificado como 'N': 1 ocorrencia(s)
+  Real 'M' classificado como 'N': 1 ocorrencia(s)
+  Real 'M' classificado como 'H': 1 ocorrencia(s)
+  Real 'N' classificado como 'K': 1 ocorrencia(s)
+  Real 'Q' classificado como 'O': 1 ocorrencia(s)
+==============================================================================
