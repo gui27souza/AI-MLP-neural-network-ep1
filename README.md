@@ -79,6 +79,18 @@ make lab_logic_gates NUM_EPOCHS=500
 
 ---
 
+### 3. Busca em Grade (Grid Search)
+
+Para executar uma busca automatizada sobre combinações de hiperparâmetros com relatório consolidado em CSV e ranking impresso no terminal:
+
+```bash
+make grid_search
+```
+
+Os resultados são salvos em `models/grid_search/<TIMESTAMP>/summary.csv` juntamente com os arquivos JSON de cada modelo testado na rodada.
+
+---
+
 ## Modelos e Checkpoints
 
 Ao final do treinamento (ou em caso de interrupção com `Ctrl+C`), a rede restaura os melhores pesos observados na validação (priorizando a maior acurácia de validação e usando menor MSE como critério de desempate) e salva o modelo na pasta `models/` no formato JSON:
