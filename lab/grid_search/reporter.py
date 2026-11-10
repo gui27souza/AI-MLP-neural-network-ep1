@@ -20,6 +20,7 @@ class GridSearchReporter:
         momentum: float,
         patience: int,
         orch: Orchestrator,
+        val_ratio: float = 0.1,
         checkpoint_path: str | None = None,
     ) -> dict:
         """Extrai métricas do orquestrador e armazena o resultado da rodada."""
@@ -43,6 +44,7 @@ class GridSearchReporter:
         record = {
             "rodada": round_num,
             "hidden_neurons": hidden_neurons,
+            "val_ratio": val_ratio,
             "learn_rate": learn_rate,
             "momentum": momentum,
             "patience": patience,
@@ -99,24 +101,26 @@ class GridSearchReporter:
         )
 
         header = (
-            f"{'Rank':<5} {'Rodada':<7} {'H':<5} {'LR':<7} {'M':<5} {'P':<4} "
+            f"{'Rank':<5} {'Rodada':<7} {'H':<5} {'Ratio':<6} {'LR':<7} {'M':<5} {'P':<4} "
             f"{'Epocas':<7} {'Best Val Acc':<14} {'Melhor Epoca':<13} {'Best MSE':<10}"
         )
         print(header)
         print("-" * len(header))
 
         for idx, r in enumerate(ranked[:top_k], start=1):
+            ratio_val = r.get("val_ratio", 0.1)
             print(
-                f"{idx:<5} {r['rodada']:<7} {r['hidden_neurons']:<5} {r['learn_rate']:<7} "
+                f"{idx:<5} {r['rodada']:<7} {r['hidden_neurons']:<5} {ratio_val:<6} {r['learn_rate']:<7} "
                 f"{r['momentum']:<5} {r['patience']:<4} {r['epochs_exec']:<7} "
                 f"{r['best_val_acc']:>10.2f}%   {r['best_val_acc_epoch']:<13} {r['best_val_mse']:<10.5f}"
             )
 
         best = ranked[0]
+        ratio_best = best.get("val_ratio", 0.1)
         print("=" * 88)
         print("MELHOR COMBINACAO ENCONTRADA (Top 1):")
         print(
-            f"  Hidden={best['hidden_neurons']} | LR={best['learn_rate']} | Momentum={best['momentum']} | Patience={best['patience']}\n"
+            f"  Hidden={best['hidden_neurons']} | Ratio={ratio_best} | LR={best['learn_rate']} | Momentum={best['momentum']} | Patience={best['patience']}\n"
             f"  Acuracia de Validacao: {best['best_val_acc']:.2f}% (alcancada na epoca {best['best_val_acc_epoch']})\n"
             f"  MSE de Validacao: {best['best_val_mse']:.5f}\n"
             f"  Checkpoint: {best['checkpoint']}"

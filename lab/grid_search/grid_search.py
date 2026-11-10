@@ -63,17 +63,16 @@ if __name__ == "__main__":
     MAX_EPOCHS = 150
     TARGET_MSE = 0.001
 
-    HIDDEN_NEURONS = [16, 32, 64]
-    LEARN_RATE = [0.005, 0.01, 0.025]
-    MOMENTUM = [0.4, 0.8]
-    PATIENCE = [3, 7]
-
-    # == Carregamento dos dados ====
-    train_x, train_y, test_x, test_y, _ = DatasetLoader.load_caracteres_completo()
+    HIDDEN_NEURONS = [48, 96]
+    VAL_RATIOS = [0.15, 0.3]
+    LEARN_RATE = [0.005]
+    MOMENTUM = [0.8]
+    PATIENCE = [4]
 
     reporter = GridSearchReporter(output_dir=PATH)
 
     total_combinations = (
+        len(VAL_RATIOS) *
         len(HIDDEN_NEURONS) *
         len(LEARN_RATE) *
         len(MOMENTUM) *
@@ -81,40 +80,47 @@ if __name__ == "__main__":
     )
     current = 1
 
-    for hidden_neurons in HIDDEN_NEURONS:
-        for learn_rate in LEARN_RATE:
-            for momentum in MOMENTUM:
-                for patience in PATIENCE:
+    for val_ratio in VAL_RATIOS:
 
-                    print(
-                        f"\n[RODADA {current}/{total_combinations}] "
-                        f"H={hidden_neurons} | "
-                        f"LR={learn_rate} | "
-                        f"M={momentum} | "
-                        f"P={patience}"
-                    )
+        # Carrega o dataset particionado conforme a proporção de validação da rodada
+        train_x, train_y, test_x, test_y, _ = DatasetLoader.load_caracteres_completo(val_ratio=val_ratio)
 
-                    orch, saved_file = pipeline(
-                        train_x, train_y, test_x, test_y,
-                        epochs=MAX_EPOCHS,
-                        target_mse=TARGET_MSE,
-                        hidden_neurons=hidden_neurons,
-                        learn_rate=learn_rate,
-                        momentum=momentum,
-                        patience=patience,
-                    )
+        for hidden_neurons in HIDDEN_NEURONS:
+            for learn_rate in LEARN_RATE:
+                for momentum in MOMENTUM:
+                    for patience in PATIENCE:
 
-                    reporter.record_trial(
-                        round_num=current,
-                        hidden_neurons=hidden_neurons,
-                        learn_rate=learn_rate,
-                        momentum=momentum,
-                        patience=patience,
-                        orch=orch,
-                        checkpoint_path=saved_file,
-                    )
+                        print(
+                            f"\n[RODADA {current}/{total_combinations}] "
+                            f"Ratio={val_ratio} | "
+                            f"H={hidden_neurons} | "
+                            f"LR={learn_rate} | "
+                            f"M={momentum} | "
+                            f"P={patience}"
+                        )
 
-                    current += 1
+                        orch, saved_file = pipeline(
+                            train_x, train_y, test_x, test_y,
+                            epochs=MAX_EPOCHS,
+                            target_mse=TARGET_MSE,
+                            hidden_neurons=hidden_neurons,
+                            learn_rate=learn_rate,
+                            momentum=momentum,
+                            patience=patience,
+                        )
+
+                        reporter.record_trial(
+                            round_num=current,
+                            hidden_neurons=hidden_neurons,
+                            learn_rate=learn_rate,
+                            momentum=momentum,
+                            patience=patience,
+                            orch=orch,
+                            val_ratio=val_ratio,
+                            checkpoint_path=saved_file,
+                        )
+
+                        current += 1
 
     # == Exportar Resumo e Exibir Ranking ====
     reporter.save_csv()
