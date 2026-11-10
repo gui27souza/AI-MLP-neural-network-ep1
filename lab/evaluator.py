@@ -13,7 +13,36 @@ from src.models import MLP
 class MLPEvaluator:
     """Responsável por avaliar modelos persistidos, gerar métricas detalhadas e gráficos de treinamento."""
 
-    def __init__(self, model_path: str):
+    @staticmethod
+    def _resolve_unique_dir(dir_path: str) -> str:
+        """Se o diretório já existir e contiver arquivos, adiciona sufixo incremental (_v2, _v3, ...) para não sobrescrever."""
+        if not os.path.exists(dir_path):
+            return dir_path
+
+        if not os.listdir(dir_path):
+            return dir_path
+
+        version = 2
+        while os.path.exists(f"{dir_path}_v{version}"):
+            if not os.listdir(f"{dir_path}_v{version}"):
+                return f"{dir_path}_v{version}"
+            version += 1
+        return f"{dir_path}_v{version}"
+
+    def _resolve_output_dir(self, output_dir: str | None = None) -> str:
+        """Define o diretório final de resultados, garantindo blindagem contra sobrescrita."""
+        if output_dir is not None:
+            return self._resolve_unique_dir(output_dir)
+
+        # Se o modelo avaliado já está dentro de uma pasta em results/, mantém nela mesma
+        expected_dir = os.path.abspath(os.path.join("results", self.model_name))
+        current_dir = os.path.abspath(self.model_dir)
+        if current_dir == expected_dir or current_dir.startswith(expected_dir + os.sep):
+            return self.model_dir
+
+        return self._resolve_unique_dir(os.path.join("results", self.model_name))
+
+    def __init__(self, model_path: str, output_dir: str | None = None):
         if not os.path.exists(model_path):
             raise FileNotFoundError(f"Arquivo de modelo não encontrado: {model_path}")
 
@@ -21,6 +50,8 @@ class MLPEvaluator:
         self.model_dir = os.path.dirname(os.path.abspath(model_path))
         self.model_filename = os.path.basename(model_path)
         self.model_name = os.path.splitext(self.model_filename)[0]
+
+        self.output_dir = self._resolve_output_dir(output_dir)
 
         with open(model_path, "r", encoding="utf-8") as f:
             self.raw_data = json.load(f)
@@ -163,7 +194,7 @@ class MLPEvaluator:
 
     def save_evaluation_report(self, eval_results: dict, output_dir: str | None = None) -> str:
         """Salva o resumo textual da avaliação no diretório de resultados."""
-        target_dir = output_dir if output_dir is not None else os.path.join("results", self.model_name)
+        target_dir = output_dir if output_dir is not None else self.output_dir
         os.makedirs(target_dir, exist_ok=True)
         report_path = os.path.join(target_dir, "evaluation_report.txt")
 
@@ -176,7 +207,7 @@ class MLPEvaluator:
 
     def copy_model_to_results(self, output_dir: str | None = None) -> str:
         """Copia o arquivo .json do modelo para centralizar todos os artefatos de entrega."""
-        target_dir = output_dir if output_dir is not None else os.path.join("results", self.model_name)
+        target_dir = output_dir if output_dir is not None else self.output_dir
         os.makedirs(target_dir, exist_ok=True)
         dest_path = os.path.join(target_dir, self.model_filename)
 
@@ -206,7 +237,7 @@ class MLPEvaluator:
             print("\nAviso: matplotlib nao instalado. Instale com: pip install matplotlib")
             return None
 
-        target_dir = output_dir if output_dir is not None else os.path.join("results", self.model_name)
+        target_dir = output_dir if output_dir is not None else self.output_dir
         os.makedirs(target_dir, exist_ok=True)
         epochs = list(range(1, len(train_mse) + 1))
 
@@ -261,7 +292,7 @@ class MLPEvaluator:
             print("\nAviso: matplotlib nao instalado. Instale com: pip install matplotlib")
             return None
 
-        target_dir = output_dir if output_dir is not None else os.path.join("results", self.model_name)
+        target_dir = output_dir if output_dir is not None else self.output_dir
         os.makedirs(target_dir, exist_ok=True)
 
         matrix = np.array(eval_results["confusion_matrix"])
