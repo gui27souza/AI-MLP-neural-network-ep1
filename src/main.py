@@ -48,7 +48,7 @@ def build_mlp(num_inputs: int, num_outputs: int) -> MLP:
     )
 
 
-def save_model_checkpoint(mlp: MLP, orch: Orchestrator) -> None:
+def save_model_checkpoint(mlp: MLP, orch: Orchestrator, path="models/") -> None:
     """Extrai métricas do orquestrador e salva o modelo persistido com nome semântico."""
 
     try:
@@ -115,7 +115,7 @@ def save_model_checkpoint(mlp: MLP, orch: Orchestrator) -> None:
             f"mlp_caracteres_{hidden_desc}_e{saved_epoch}"
             f"_acc{saved_val_acc_pct:.1f}_mse{saved_val_mse:.3f}.json"
         )
-        filepath = f"models/{filename}"
+        filepath = f"{path}{filename}"
 
         MLPPersister.save(mlp, filepath, metrics=metrics)
 
