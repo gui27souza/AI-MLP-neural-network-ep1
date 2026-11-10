@@ -10,8 +10,9 @@ TARGET_MSE ?=
 PATIENCE ?=
 PRINT_INTERVAL ?= 2
 VAL_RATIO ?= 0.1
+MODEL ?=
 
-.PHONY: help main lab_logic_gates grid_search
+.PHONY: help main lab_logic_gates grid_search evaluate
 
 # ==============================================================================
 #  Execução
@@ -29,6 +30,9 @@ help:
 	@echo
 	@echo "====> grid_search -> executa a busca em grade de hiperparâmetros"
 	@echo "      Ex: make grid_search"
+	@echo
+	@echo "====> evaluate -> avalia um modelo salvo (matriz de confusao e curvas)"
+	@echo "      Ex: make evaluate MODEL=models/grid_search/h80_acc86.4_.../gs_h80_...json"
 	@echo
 
 main:
@@ -48,3 +52,6 @@ lab_logic_gates:
 
 grid_search:
 	@python3 -m lab.grid_search.grid_search
+
+evaluate:
+	@MODEL="$(MODEL)" python3 -m lab.evaluator
