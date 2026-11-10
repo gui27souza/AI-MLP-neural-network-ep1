@@ -77,7 +77,7 @@ make lab_logic_gates NUM_EPOCHS=500
 
 ## Modelos e Checkpoints
 
-Ao final do treinamento (ou em caso de interrupção com `Ctrl+C`), a rede restaura os melhores pesos observados na validação e salva o modelo na pasta `models/` no formato JSON:
+Ao final do treinamento (ou em caso de interrupção com `Ctrl+C`), a rede restaura os melhores pesos observados na validação (priorizando a maior acurácia de validação e usando menor MSE como critério de desempate) e salva o modelo na pasta `models/` no formato JSON:
 
 ```text
 models/mlp_caracteres_h32_e14_acc78.5_mse0.057.json

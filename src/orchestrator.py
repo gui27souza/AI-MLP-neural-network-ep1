@@ -94,10 +94,18 @@ class Orchestrator:
                 val_mse_str = f"{val_mse:.5f}"
                 val_acc_str = f"{val_acc * 100:.2f}%"
 
-                # Rastreia a melhor época na validação
-                if val_mse < self.best_val_mse:
-                    self.best_val_mse = val_mse
+                # Rastreia a melhor época na validação:
+                # 1. Prioriza maior acurácia de validação
+                # 2. Desempata pelo menor MSE de validação
+                is_better = False
+                if val_acc > self.best_val_acc:
+                    is_better = True
+                elif val_acc == self.best_val_acc and val_mse < self.best_val_mse:
+                    is_better = True
+
+                if is_better:
                     self.best_val_acc = val_acc
+                    self.best_val_mse = val_mse
                     self.best_epoch = epoch
                     self.best_weights = self.mlp.get_weights()
                     patience_counter = 0
@@ -135,7 +143,7 @@ class Orchestrator:
             if has_val and self.patience is not None and patience_counter >= self.patience:
                 self.stopped_early = True
                 self.stop_reason = (
-                    f"Early Stopping acionado após {self.patience} épocas sem melhora no MSE de validação."
+                    f"Early Stopping acionado após {self.patience} épocas sem melhora na acurácia/MSE de validação."
                 )
                 if not should_print:
                     print(
