@@ -74,14 +74,18 @@ if __name__ == "__main__":
         num_inputs=2, num_neurons=2,
         activation_func=sigmoide_bipolar,
         derivative_activation=deriv_sigmoide_bipolar,
+        weight_range=(-1.0, 1.0),
+        bias_range=(-1.0, 1.0),
     )
 
     mlp_XOR = MLP(
         num_inputs=2, num_outputs=1,
-        learn_rate=0.1,
+        learn_rate=0.25,
         hidden_layers=[hidden_layer_1_XOR],
         output_activation=sigmoide_bipolar,
         output_deriv_activation=deriv_sigmoide_bipolar,
+        weight_range=(-1.0, 1.0),
+        bias_range=(-1.0, 1.0),
     )
 
     orch_XOR = Orchestrator(
