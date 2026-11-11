@@ -100,16 +100,16 @@ if __name__ == "__main__":
     OUTPUT_DIR = f"models/grid_search/{INIT_TIME}/"
 
     # == Hiperparâmetros Fixos e Critérios ====
-    MAX_EPOCHS = 150
+    MAX_EPOCHS = 120
     TARGET_MSE = 0.001
-    MIN_ACC_THRESHOLD = 80.0
+    MIN_ACC_THRESHOLD = 78.0
 
-    # == Grade de Busca ====
-    HIDDEN_NEURONS = [80]
-    VAL_RATIOS = [0.30]
-    LEARN_RATE = [0.003]
-    MOMENTUM = [0.80]
-    PATIENCE = [4]
+    # == Grade de Busca (192 combinações exploratórias) ====
+    VAL_RATIOS = [0.20, 0.30]
+    HIDDEN_NEURONS = [16, 48, 96, 144]
+    LEARN_RATE = [0.001, 0.003, 0.008, 0.020]
+    MOMENTUM = [0.10, 0.50, 0.90]
+    PATIENCE = [3, 6]
 
     reporter = GridSearchReporter(output_dir=OUTPUT_DIR)
 
