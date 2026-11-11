@@ -1,0 +1,34 @@
+==============================================================================
+  RELATORIO DE AVALIACAO DO MODELO: gs_acc86.6_h48.json
+==============================================================================
+  Amostras de Teste/Validacao : 397 (Ratio=0.3)
+  Acuracia Geral              : 86.65%
+  MSE de Teste                : 0.04301
+------------------------------------------------------------------------------
+
+[TOP 5 CARACTERES COM MAIOR DIFICULDADE (Menor Acuracia)]
+  Letra 'B':  66.67% (10/15 acertos)
+  Letra 'O':  66.67% (10/15 acertos)
+  Letra 'W':  75.00% (12/16 acertos)
+  Letra 'X':  75.00% (12/16 acertos)
+  Letra 'H':  80.00% (12/15 acertos)
+
+[TOP 5 CARACTERES MAIS RECONHECIDOS (Maior Acuracia)]
+  Letra 'P': 100.00% (15/15 acertos)
+  Letra 'K': 100.00% (15/15 acertos)
+  Letra 'Z':  93.75% (15/16 acertos)
+  Letra 'Y':  93.75% (15/16 acertos)
+  Letra 'V':  93.75% (15/16 acertos)
+
+[MAIORES CONFUSOES OBSERVADAS (Real -> Predito)]
+  Real 'B' classificado como 'G': 3 ocorrencia(s)
+  Real 'X' classificado como 'K': 3 ocorrencia(s)
+  Real 'O' classificado como 'G': 2 ocorrencia(s)
+  Real 'O' classificado como 'Q': 2 ocorrencia(s)
+  Real 'R' classificado como 'F': 2 ocorrencia(s)
+  Real 'W' classificado como 'N': 1 ocorrencia(s)
+  Real 'M' classificado como 'N': 1 ocorrencia(s)
+  Real 'W' classificado como 'A': 1 ocorrencia(s)
+  Real 'M' classificado como 'H': 1 ocorrencia(s)
+  Real 'W' classificado como 'B': 1 ocorrencia(s)
+==============================================================================
