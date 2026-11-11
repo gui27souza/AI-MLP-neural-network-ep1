@@ -183,11 +183,7 @@ class MLPPersister:
             }
 
             hidden_desc = "h" + "_".join(str(layer.num_neurons) for layer in mlp.hidden_layers)
-            filename = (
-                f"{prefix}_{hidden_desc}"
-                f"_acc{saved_val_acc_pct:.1f}_mse{saved_val_mse:.3f}"
-                f"_e{saved_epoch}.json"
-            )
+            filename = f"{prefix}_acc{saved_val_acc_pct:.1f}_{hidden_desc}.json"
             return cls.save(mlp, os.path.join(dir_path, filename), metrics=metrics)
 
         except Exception as e:
