@@ -100,16 +100,20 @@ if __name__ == "__main__":
     OUTPUT_DIR = f"models/grid_search/{INIT_TIME}/"
 
     # == Hiperparâmetros Fixos e Critérios ====
-    MAX_EPOCHS = 150
+    MAX_EPOCHS = 120
     TARGET_MSE = 0.001
-    MIN_ACC_THRESHOLD = 80.0
+    MIN_ACC_THRESHOLD = 84.0
 
-    # == Grade de Busca ====
-    HIDDEN_NEURONS = [80]
+    # == Grade de Busca - Os 3 Modelos Ótimos ====
+    # Representam as 3 fronteiras de Pareto empíricas do problema
+    # 1. O Campeão - melhor geral           H=48, LR=0.010, M=0.55 (Acc 86.65%, MSE 0.04301)
+    # 2. A Via Rápida - menos épocas        H=48, LR=0.025, M=0.15 (Acc 86.40%, MSE 0.04139)
+    # 3. O Mínimo Quadrático - menor mse    H=64, LR=0.008, M=0.85 (Acc 84.40%, MSE 0.03942)
     VAL_RATIOS = [0.30]
-    LEARN_RATE = [0.003]
-    MOMENTUM = [0.80]
-    PATIENCE = [4]
+    HIDDEN_NEURONS = [48, 64]
+    LEARN_RATE = [0.008, 0.010, 0.025]
+    MOMENTUM = [0.15, 0.55, 0.85]
+    PATIENCE = [6]
 
     reporter = GridSearchReporter(output_dir=OUTPUT_DIR)
 

@@ -1,0 +1,37 @@
+==============================================================================
+                    CONFIGURACAO DE HIPERPARAMETROS DO MODELO
+==============================================================================
+Data de Geracao      : 2026-11-11T10:47:26.274143
+Tempo de Treinamento : 33.54s
+
+[1. ARQUITETURA DA REDE]
+  - Entradas (n)              : 120 (caracteres 10x12 normalizados [-1, 1])
+  - Camada(s) Oculta(s) (p)   : [64] neuronios
+  - Saidas (m)                : 26 neuronios (classes A-Z)
+  - Funcao de Ativacao        : Sigmoide Bipolar (faixa [-1, 1])
+  - Derivada da Ativacao      : f'(x) = 0.5 * (1 + f(x)) * (1 - f(x))
+
+[2. HIPERPARAMETROS DE TREINAMENTO]
+  - Taxa de Aprendizado (eta) : 0.008
+  - Termo de Momento (alpha)  : 0.75
+  - Maximo de Epocas          : 120
+  - Epocas Executadas         : 25
+  - Criterio de Parada        : Early Stopping (Paciencia=6, Min Delta MSE=0.001)
+  - Parada Acionada           : True
+  - Motivo da Parada          : Early Stopping acionado após 6 épocas sem melhora na acurácia/MSE de validação.
+  - Epoca do Melhor Modelo    : 19
+
+[3. DADOS E AMOSTRAGEM]
+  - Dataset                   : caracteres-completo (EACH-USP)
+  - Amostras de Treinamento   : 929
+  - Amostras de Validacao     : 397 (Ratio=0.3)
+  - Amostras de Teste         : 397
+
+[4. DESEMPENHO ALCANCADO]
+  - MSE de Treinamento        : 0.002753
+  - Acuracia de Treinamento   : 99.46%
+  - MSE de Validacao          : 0.044410
+  - Acuracia de Validacao     : 83.38%
+  - MSE de Teste              : 0.042708
+  - Acuracia de Teste         : 84.89%
+==============================================================================
