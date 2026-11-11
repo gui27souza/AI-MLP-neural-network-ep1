@@ -1,49 +1,24 @@
-import csv
-import numpy as np
+# ===
 
 
 class DatasetLoader:
+    """
+    Carregador e pré-processador do dataset oficial do EP1: CARACTERES COMPLETO.
 
-    @staticmethod
-    def load_csv(filepath: str, num_target_columns: int = 1, delimiter: str = ",") -> tuple[list[list[float]], list[list[float]]]:
-        """
-        Lê arquivos CSV e separa as colunas de entrada (X) e saídas/targets (Y).
-        Assume que as ÚLTIMAS 'num_target_columns' são os targets.
-        """
-        inputs = []
-        targets = []
+    Estrutura do Dataset:
+    - Entradas (X.txt): 1326 amostras x 120 pixels normalizados (matriz de imagem 10x12).
+      O arquivo bruto contém uma vírgula residual ao final de cada linha gerando
+      uma 121ª coluna espúria, que é sanitizada e descartada no carregamento.
+    - Saídas (Y_letra.txt): 1326 rótulos categóricos de letras ('A' a 'Z'),
+      distribuídos em 51 variações de fontes tipográficas para cada uma das 26 letras.
 
-        with open(filepath, "r", encoding="utf-8-sig") as f:
-            reader = csv.reader(f, delimiter=delimiter)
-            for row in reader:
-
-                # pula linhas vazias/comentários
-                if not row or row[0].startswith("#"):
-                    continue
-
-                float_row = [float(val) for val in row]
-                X = float_row[:-num_target_columns]
-                Y = float_row[-num_target_columns:]
-
-                inputs.append(X)
-                targets.append(Y)
-
-        return inputs, targets
-
-    @staticmethod
-    def load_npy(x_path: str, y_path: str) -> tuple[list[list[float]], list[list[float]]]:
-        """Lê os arquivos .npy fornecidos pelo NumPy e converte para listas de float puro."""
-        x_data = np.load(x_path)
-        y_data = np.load(y_path)
-
-        # Garante que Y tenha 2D (ex: [N, 1] em vez de [N,])
-        if len(y_data.shape) == 1:
-            y_data = y_data.reshape(-1, 1)
-
-        inputs = x_data.astype(float).tolist()
-        targets = y_data.astype(float).tolist()
-
-        return inputs, targets
+    Codificação Bipolar One-Hot:
+    - Como a rede neural utiliza a função Sigmoide Bipolar com imagem contínua em (-1, +1),
+      os alvos precisam residir no mesmo espaço de ativação.
+    - Cada caractere é codificado em um vetor de 26 posições preenchido com -1.0
+      (indicando inatividade/não-pertencimento à classe) e +1.0 no índice correspondente
+      à letra (classe ativa).
+    """
 
     @staticmethod
     def load_caracteres_completo(
@@ -55,16 +30,21 @@ class DatasetLoader:
         list[list[float]],  # train_targets
         list[list[float]],  # test_inputs
         list[list[float]],  # test_targets
-        list[str],          # class_labels
+        list[str],          # class_labels ('A'..'Z')
     ]:
         """
-        Carrega o dataset oficial CARACTERES COMPLETO (1326 amostras x 120 pixels).
-        
-        - Trata o arquivo X.txt descartando a 121ª coluna (gerada por vírgula residual ao final de cada linha).
-        - Converte cada letra de Y_letra.txt em um vetor One-Hot Bipolar de 26 posições (-1.0 e +1.0).
-        - Separa as últimas amostras para teste/validação com base na proporção 'val_ratio' (ex: 0.1 = 10%).
+        Carrega, sanitiza, codifica e particiona o dataset de caracteres.
+
+        Parâmetros:
+        - filepath_inputs: Caminho do arquivo com os pixels dos caracteres.
+        - filepath_labels: Caminho do arquivo com os caracteres ('A' a 'Z').
+        - val_ratio: Proporção de amostras reservadas para o conjunto de teste/validação (ex: 0.1 = 10%).
+
+        Retorna:
+        - (train_inputs, train_targets, test_inputs, test_targets, class_labels)
         """
-        # Lê as entradas descartando a vírgula residual no fim de cada linha (mantém 120 pixels)
+        # 1. Leitura e sanitização dos pixels de entrada
+        # Descarte da 121ª coluna residual gerada por vírgula no fim da linha
         with open(filepath_inputs, "r", encoding="utf-8-sig") as f:
             all_inputs = [
                 [float(pixel) for pixel in line.strip().split(",")[:120]]
@@ -72,15 +52,15 @@ class DatasetLoader:
                 if line.strip()
             ]
 
-        # Lê os rótulos de cada caractere ('A', 'B', ...)
+        # 2. Leitura dos rótulos de classe ('A', 'B', ..., 'Z')
         with open(filepath_labels, "r", encoding="utf-8-sig") as f:
             all_labels = [line.strip() for line in f if line.strip()]
 
-        # Cria lista de classes de 'A' a 'Z' e mapeamento de índice
+        # 3. Mapeamento das 26 classes do alfabeto
         class_labels = [chr(code) for code in range(ord("A"), ord("Z") + 1)]
         label_to_index = {label: index for index, label in enumerate(class_labels)}
 
-        # Converte cada rótulo em vetor One-Hot Bipolar (todas -1.0, alvo +1.0)
+        # 4. Codificação One-Hot Bipolar (-1.0 e +1.0)
         all_targets: list[list[float]] = []
         for label in all_labels:
             target_vector = [-1.0] * len(class_labels)
@@ -88,7 +68,7 @@ class DatasetLoader:
                 target_vector[label_to_index[label]] = 1.0
             all_targets.append(target_vector)
 
-        # Separação formal entre Treino e Teste
+        # 5. Particionamento formal entre Treino e Teste/Validação
         num_test_samples = int(len(all_inputs) * val_ratio)
         num_train_samples = len(all_inputs) - num_test_samples
 

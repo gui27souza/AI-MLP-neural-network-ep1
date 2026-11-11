@@ -149,7 +149,7 @@ class GridSearchReporter:
         parent_dir = os.path.dirname(clean_dir)
         current_name = os.path.basename(clean_dir)
 
-        prefix = f"h{best_h}_acc{best_acc:.1f}_"
+        prefix = f"acc{best_acc:.1f}_h{best_h}_"
         if current_name.startswith(prefix):
             return self.output_dir
 

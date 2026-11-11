@@ -96,7 +96,7 @@ Os resultados são salvos em `models/grid_search/<TIMESTAMP>/summary.csv` juntam
 Ao final do treinamento (ou em caso de interrupção com `Ctrl+C`), a rede restaura os melhores pesos observados na validação (priorizando a maior acurácia de validação e usando menor MSE como critério de desempate) e salva o modelo na pasta `models/` no formato JSON:
 
 ```text
-models/mlp_caracteres_h32_acc78.5_mse0.057_e14.json
+models/mlp_caracteres_acc78.5_h32.json
 ```
 
 O arquivo contém:
