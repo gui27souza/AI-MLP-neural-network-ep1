@@ -3,14 +3,14 @@
 from datetime import datetime
 from itertools import product
 
-from src.config import GridSearchConfig
-from src.dataset_loader import DatasetLoader
-from src.funcs import sigmoide_bipolar, deriv_sigmoide_bipolar
-from src.grid_reporter import GridSearchReporter
-from src.initial_weights import get_initial_weights
-from src.models import Layer, MLP
-from src.mlp_persister import MLPPersister
-from src.orchestrator import Orchestrator
+from src.core.funcs import sigmoide_bipolar, deriv_sigmoide_bipolar
+from src.core.initial_weights import get_initial_weights
+from src.core.models import Layer, MLP
+from src.data.dataset_loader import DatasetLoader
+from src.experiments.grid_reporter import GridSearchReporter
+from src.persistence.mlp_persister import MLPPersister
+from src.training.config import GridSearchConfig
+from src.training.orchestrator import Orchestrator
 
 # =====
 

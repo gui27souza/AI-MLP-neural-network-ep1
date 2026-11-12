@@ -60,7 +60,7 @@ main:
 
 lab_logic_gates:
 	@NUM_EPOCHS=$(NUM_EPOCHS) \
-	$(PYTHON) -m lab.logic_gates
+	$(PYTHON) -m lab.logic_gates.logic_gates
 
 grid_search:
 	@MAX_EPOCHS="$(MAX_EPOCHS)" \
@@ -75,13 +75,13 @@ grid_search:
 	LEARN_RATE="$(LEARN_RATE)" \
 	MOMENTUM="$(MOMENTUM)" \
 	PATIENCE="$(PATIENCE)" \
-	$(PYTHON) -m src.grid_search
+	$(PYTHON) -m src.experiments.grid_search
 
 evaluate:
-	@MODEL="$(MODEL)" $(PYTHON) -m lab.evaluator
+	@MODEL="$(MODEL)" $(PYTHON) -m lab.evaluation.evaluator
 
 evaluate_grid:
-	@GRID_DIR="$(or $(GRID_DIR),$(DIR))" $(PYTHON) -m lab.grid_evaluator
+	@GRID_DIR="$(or $(GRID_DIR),$(DIR))" $(PYTHON) -m lab.analysis.grid_evaluator
 
 full_grid_pipeline: grid_search
 	@if [ -f "models/grid_search/.latest_grid.txt" ]; then \
@@ -89,7 +89,7 @@ full_grid_pipeline: grid_search
 		echo ""; \
 		echo "== Executando analise e geracao de graficos do Grid Search: $$LATEST_GRID =="; \
 		echo ""; \
-		$(PYTHON) -m lab.grid_evaluator "$$LATEST_GRID"; \
+		$(PYTHON) -m lab.analysis.grid_evaluator "$$LATEST_GRID"; \
 	else \
 		echo "Aviso: Nenhum diretorio de grid search foi registrado."; \
 	fi
@@ -100,7 +100,7 @@ full_pipeline: main
 		echo ""; \
 		echo "== Iniciando avaliacao automatica do modelo gerado: $$LATEST_MODEL =="; \
 		echo ""; \
-		MODEL="$$LATEST_MODEL" $(PYTHON) -m lab.evaluator; \
+		MODEL="$$LATEST_MODEL" $(PYTHON) -m lab.evaluation.evaluator; \
 	else \
 		echo "Aviso: Nenhum modelo foi registrado para avaliacao."; \
 	fi

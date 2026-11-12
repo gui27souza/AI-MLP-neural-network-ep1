@@ -1,12 +1,12 @@
 # ===== IMPORTS ==============================
 
-from src.config import TrainConfig
-from src.dataset_loader import DatasetLoader
-from src.funcs import sigmoide_bipolar, deriv_sigmoide_bipolar
-from src.initial_weights import get_initial_weights
-from src.models import Layer, MLP
-from src.orchestrator import Orchestrator
-from src.mlp_persister import MLPPersister
+from src.core.funcs import sigmoide_bipolar, deriv_sigmoide_bipolar
+from src.core.initial_weights import get_initial_weights
+from src.core.models import Layer, MLP
+from src.data.dataset_loader import DatasetLoader
+from src.persistence.mlp_persister import MLPPersister
+from src.training.config import TrainConfig
+from src.training.orchestrator import Orchestrator
 
 # =====
 

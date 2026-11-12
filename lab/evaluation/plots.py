@@ -1,4 +1,6 @@
 import os
+import matplotlib.pyplot as plt
+import numpy as np
 
 
 def plot_learning_curves(
@@ -7,24 +9,18 @@ def plot_learning_curves(
     model_name: str,
     output_dir: str,
 ) -> str | None:
-    """Gera o grafico de curvas de aprendizado (MSE e Acuracia) se o historico estiver presente."""
+    """Gera o grafico comparativo de curvas de aprendizado (MSE e Acuracia)."""
     train_mse = history.get("train_mse", [])
     val_mse = history.get("val_mse", [])
     train_acc = history.get("train_acc", [])
     val_acc = history.get("val_acc", [])
 
     if not train_mse:
-        print(f"\nAviso: Historico de treinamento nao encontrado em {model_name}.")
-        return None
-
-    try:
-        import matplotlib.pyplot as plt
-    except ImportError:
-        print("\nAviso: matplotlib nao instalado. Instale com: pip install matplotlib")
         return None
 
     os.makedirs(output_dir, exist_ok=True)
     epochs = list(range(1, len(train_mse) + 1))
+    saved_epoch = stopping_info.get("saved_epoch")
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
 
@@ -32,11 +28,8 @@ def plot_learning_curves(
     ax1.plot(epochs, train_mse, label="MSE Treino", color="#1f77b4", linewidth=2)
     if val_mse:
         ax1.plot(epochs, val_mse, label="MSE Validacao", color="#ff7f0e", linewidth=2, linestyle="--")
-
-    saved_epoch = stopping_info.get("saved_epoch")
     if saved_epoch and saved_epoch <= len(epochs):
         ax1.axvline(x=saved_epoch, color="#2ca02c", linestyle=":", label=f"Melhor Epoca ({saved_epoch})")
-
     ax1.set_title("Curva de Aprendizado - MSE")
     ax1.set_xlabel("Epocas")
     ax1.set_ylabel("MSE")
@@ -48,10 +41,8 @@ def plot_learning_curves(
         ax2.plot(epochs, train_acc, label="Acc Treino (%)", color="#1f77b4", linewidth=2)
     if val_acc:
         ax2.plot(epochs, val_acc, label="Acc Validacao (%)", color="#ff7f0e", linewidth=2, linestyle="--")
-
     if saved_epoch and saved_epoch <= len(epochs):
         ax2.axvline(x=saved_epoch, color="#2ca02c", linestyle=":", label=f"Melhor Epoca ({saved_epoch})")
-
     ax2.set_title("Curva de Acuracia (%)")
     ax2.set_xlabel("Epocas")
     ax2.set_ylabel("Acuracia (%)")
@@ -70,14 +61,7 @@ def plot_learning_curves(
 
 
 def plot_confusion_matrix(eval_results: dict, model_name: str, output_dir: str) -> str | None:
-    """Gera o mapa de calor da Matriz de Confusao 26 x 26."""
-    try:
-        import matplotlib.pyplot as plt
-        import numpy as np
-    except ImportError:
-        print("\nAviso: matplotlib ou numpy nao instalado.")
-        return None
-
+    """Gera mapa de calor da matriz de confusao com contagem por celula."""
     os.makedirs(output_dir, exist_ok=True)
 
     matrix = np.array(eval_results["confusion_matrix"])
@@ -91,7 +75,6 @@ def plot_confusion_matrix(eval_results: dict, model_name: str, output_dir: str) 
     ax.set_yticks(range(len(labels)))
     ax.set_xticklabels(labels, fontsize=9)
     ax.set_yticklabels(labels, fontsize=9)
-
     ax.set_xlabel("Classe Predita", fontsize=11, fontweight="bold")
     ax.set_ylabel("Classe Real", fontsize=11, fontweight="bold")
     ax.set_title(

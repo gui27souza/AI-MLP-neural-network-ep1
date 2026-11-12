@@ -1,42 +1,29 @@
 import json
 import os
 from datetime import datetime
-
 import numpy as np
 
-from src.models import MLP, Layer
-from src.orchestrator import Orchestrator
+from src.core.models import Layer, MLP
+from src.training.orchestrator import Orchestrator
 
 
 class MLPPersister:
-    """
-    Modulo responsavel pela persistencia e serializacao da rede MLP.
-
-    Suporta:
-    1. Salvamento e carregamento completo de arquitetura, pesos e historico em JSON.
-    2. Checkpoints automaticos durante treino com nomenclatura semantica.
-    3. Conversao bidirecional entre dicionarios internos e matrizes de Fausett (V e W).
-    """
-
-    # =========================================================================
-    # 1. RESOLUCAO DE ARQUIVOS E PERSISTENCIA JSON
-    # =========================================================================
+    """Serializacao da MLP em JSON, checkpoints e conversao matricial de Fausett."""
 
     @staticmethod
     def _resolve_unique_filepath(filepath: str) -> str:
-        """Evita sobrescrita adicionando sufixo incremental (_v2, _v3, ...) se o arquivo existir."""
+        """Evita sobrescrita adicionando sufixo incremental (_v2, _v3, ...)."""
         if not os.path.exists(filepath):
             return filepath
-
         base, ext = os.path.splitext(filepath)
-        version = 2
-        while os.path.exists(f"{base}_v{version}{ext}"):
-            version += 1
-        return f"{base}_v{version}{ext}"
+        v = 2
+        while os.path.exists(f"{base}_v{v}{ext}"):
+            v += 1
+        return f"{base}_v{v}{ext}"
 
     @classmethod
     def save(cls, mlp: MLP, filepath: str, metrics: dict | None = None) -> str:
-        """Serializa a estrutura, os pesos da rede e metricas opcionais em um arquivo JSON."""
+        """Salva arquitetura, pesos e metricas da MLP em arquivo JSON."""
         resolved = cls._resolve_unique_filepath(filepath)
         dirname = os.path.dirname(resolved)
         if dirname:
@@ -55,12 +42,12 @@ class MLPPersister:
             "initial_weights": getattr(mlp, "initial_weights", None),
             "hidden_layers": [
                 {
-                    "num_inputs": layer.num_inputs,
-                    "num_neurons": layer.num_neurons,
-                    "weights": layer.weights,
-                    "bias": layer.bias,
+                    "num_inputs": l.num_inputs,
+                    "num_neurons": l.num_neurons,
+                    "weights": l.weights,
+                    "bias": l.bias,
                 }
-                for layer in mlp.hidden_layers
+                for l in mlp.hidden_layers
             ],
             "output_layer": {
                 "num_inputs": mlp.output_layer.num_inputs,
@@ -78,7 +65,7 @@ class MLPPersister:
 
     @classmethod
     def load(cls, filepath: str, activation_func, derivative_activation) -> MLP:
-        """Reconstroi uma MLP e seus parametros a partir de um arquivo JSON persistido."""
+        """Carrega e reconstroi uma MLP a partir de um arquivo JSON."""
         with open(filepath, "r", encoding="utf-8") as f:
             data = json.load(f)
 
@@ -113,10 +100,6 @@ class MLPPersister:
         print(f"Modelo carregado com sucesso de: {filepath}")
         return mlp
 
-    # =========================================================================
-    # 2. CHECKPOINT DE TREINAMENTO
-    # =========================================================================
-
     @classmethod
     def save_checkpoint(
         cls,
@@ -124,7 +107,7 @@ class MLPPersister:
         dir_path: str = "models/",
         prefix: str = "mlp_caracteres",
     ) -> str | None:
-        """Extrai metricas consolidadas do orquestrador e salva o modelo com nome semantico."""
+        """Salva checkpoint do modelo com nome semantico e metricas consolidadas."""
         try:
             mlp = orch.mlp
             duration = getattr(orch, "delta_ts", None)
@@ -183,7 +166,7 @@ class MLPPersister:
                 },
             }
 
-            hidden_desc = "h" + "_".join(str(layer.num_neurons) for layer in mlp.hidden_layers)
+            hidden_desc = "h" + "_".join(str(l.num_neurons) for l in mlp.hidden_layers)
             filename = f"{prefix}_acc{saved_val_acc_pct:.1f}_{hidden_desc}.json"
             return cls.save(mlp, os.path.join(dir_path, filename), metrics=metrics)
 
@@ -191,39 +174,23 @@ class MLPPersister:
             print(f"Nao foi possivel salvar o checkpoint do modelo: {e}")
             return None
 
-    # =========================================================================
-    # 3. FORMATO MATRICIAL DE FAUSSETT (V e W)
-    # =========================================================================
-
     @staticmethod
     def to_fausett_matrices(weights_state: dict) -> tuple[list[np.ndarray], np.ndarray]:
-        """
-        Converte o dicionario de pesos para a convencao de matrizes de Laurene Fausett:
-        - Para cada camada oculta j: matriz V com dimensao (p, n + 1),
-          onde coluna 0 = bias (v_0j) e colunas 1..n = pesos (v_ij).
-        - Para a camada de saida k: matriz W com dimensao (m, p + 1),
-          onde coluna 0 = bias (w_0k) e colunas 1..p = pesos (w_jk).
-        """
+        """Converte pesos para matrizes V e W (coluna 0 = bias)."""
         hidden_matrices = []
-        for layer_state in weights_state["hidden_layers"]:
-            rows = [[b] + list(w) for b, w in zip(layer_state["bias"], layer_state["weights"])]
+        for l in weights_state["hidden_layers"]:
+            rows = [[b] + list(w) for b, w in zip(l["bias"], l["weights"])]
             hidden_matrices.append(np.array(rows, dtype=float))
 
         out_rows = [[b] + list(w) for b, w in zip(weights_state["output_layer"]["bias"], weights_state["output_layer"]["weights"])]
-        output_matrix = np.array(out_rows, dtype=float)
-
-        return hidden_matrices, output_matrix
+        return hidden_matrices, np.array(out_rows, dtype=float)
 
     @staticmethod
     def from_fausett_matrices(
         hidden_matrices: list[np.ndarray] | np.ndarray,
         output_matrix: np.ndarray,
     ) -> dict:
-        """
-        Reconstroi o dicionario de pesos a partir das matrizes V e W de Fausett:
-        - Coluna 0: bias (v_0j ou w_0k).
-        - Colunas 1..fim: pesos de conexao (v_ij ou w_jk).
-        """
+        """Reconstroi pesos a partir de matrizes V e W de Fausett."""
         if isinstance(hidden_matrices, np.ndarray) and hidden_matrices.ndim == 2:
             hidden_matrices = [hidden_matrices]
 
@@ -246,7 +213,7 @@ class MLPPersister:
 
     @staticmethod
     def load_initial_weights(filepath: str) -> dict:
-        """Carrega os pesos iniciais salvos de um arquivo JSON de checkpoint."""
+        """Carrega pesos iniciais salvos de um arquivo JSON."""
         with open(filepath, "r", encoding="utf-8") as f:
             data = json.load(f)
         if "initial_weights" in data and data["initial_weights"]:
@@ -256,4 +223,4 @@ class MLPPersister:
                 "hidden_layers": data["hidden_layers"],
                 "output_layer": data["output_layer"],
             }
-        raise ValueError(f"Estrutura de pesos invalida no arquivo JSON: {filepath}")
+        raise ValueError(f"Estrutura de pesos invalida: {filepath}")

@@ -1,7 +1,7 @@
 import os
 from dataclasses import dataclass
 
-from src.data_augmentation import augment_bipolar_dataset
+from src.data.data_augmentation import augment_bipolar_dataset
 
 
 def env_bool(key: str, default: bool = False) -> bool:

@@ -2,11 +2,11 @@ import csv
 import os
 from datetime import datetime
 
-from src.orchestrator import Orchestrator
+from src.training.orchestrator import Orchestrator
 
 
 class GridSearchReporter:
-    """Responsável por consolidar métricas, exportar CSV e exibir rankings do Grid Search."""
+    """Coleta metricas, exporta summary.csv e exibe ranking no terminal."""
 
     def __init__(self, output_dir: str):
         self.output_dir = output_dir
@@ -23,23 +23,20 @@ class GridSearchReporter:
         val_ratio: float = 0.1,
         checkpoint_path: str | None = None,
     ) -> dict:
-        """Extrai métricas do orquestrador e armazena o resultado da rodada."""
-
+        """Registra metricas da rodada de grid search."""
         duration = getattr(orch, "delta_ts", None)
         if duration is None and hasattr(orch, "start_ts"):
             duration = datetime.now().timestamp() - orch.start_ts
         else:
             duration = duration or 0.0
 
-        best_val_acc = (max(orch.history["val_acc"]) * 100) if orch.history["val_acc"] else 0.0
-        best_val_acc_epoch = (orch.history["val_acc"].index(max(orch.history["val_acc"])) + 1) if orch.history["val_acc"] else 0
-        best_val_mse = min(orch.history["val_mse"]) if orch.history["val_mse"] else 0.0
+        val_accs = orch.history.get("val_acc", [])
+        train_accs = orch.history.get("train_acc", [])
+        val_mses = orch.history.get("val_mse", [])
 
-        final_val_acc = (orch.history["val_acc"][-1] * 100) if orch.history["val_acc"] else 0.0
-        final_train_acc = (orch.history["train_acc"][-1] * 100) if orch.history["train_acc"] else 0.0
-        final_val_mse = orch.history["val_mse"][-1] if orch.history["val_mse"] else 0.0
-
-        checkpoint_filename = os.path.basename(checkpoint_path) if checkpoint_path else ""
+        best_val_acc = (max(val_accs) * 100) if val_accs else 0.0
+        best_val_acc_epoch = (val_accs.index(max(val_accs)) + 1) if val_accs else 0
+        best_val_mse = min(val_mses) if val_mses else 0.0
 
         record = {
             "rodada": round_num,
@@ -50,32 +47,29 @@ class GridSearchReporter:
             "patience": patience,
             "epochs_exec": orch.total_epochs,
             "stopped_early": orch.stopped_early,
-            "final_train_acc": round(final_train_acc, 2),
-            "final_val_acc": round(final_val_acc, 2),
+            "final_train_acc": round((train_accs[-1] * 100) if train_accs else 0.0, 2),
+            "final_val_acc": round((val_accs[-1] * 100) if val_accs else 0.0, 2),
             "best_val_acc": round(best_val_acc, 2),
             "best_val_acc_epoch": best_val_acc_epoch,
-            "final_val_mse": round(final_val_mse, 5),
+            "final_val_mse": round(val_mses[-1] if val_mses else 0.0, 5),
             "best_val_mse": round(best_val_mse, 5),
             "duracao_s": round(duration, 2),
-            "checkpoint": checkpoint_filename,
+            "checkpoint": os.path.basename(checkpoint_path) if checkpoint_path else "",
         }
 
         self.records.append(record)
         return record
 
     def save_csv(self, filename: str = "summary.csv") -> str:
-        """Salva todos os registros em arquivo CSV no diretório de saída."""
-
+        """Salva resumo consolidado em arquivo CSV."""
         if not self.records:
-            print("Nenhum registro encontrado para salvar o CSV.")
             return ""
 
         os.makedirs(self.output_dir, exist_ok=True)
         csv_path = os.path.join(self.output_dir, filename)
 
-        fieldnames = list(self.records[0].keys())
         with open(csv_path, "w", newline="", encoding="utf-8") as f:
-            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            writer = csv.DictWriter(f, fieldnames=list(self.records[0].keys()))
             writer.writeheader()
             writer.writerows(self.records)
 
@@ -83,22 +77,15 @@ class GridSearchReporter:
         return csv_path
 
     def print_ranking(self, top_k: int = 10) -> None:
-        """Exibe uma tabela formatada no terminal com os melhores modelos por acurácia de validação."""
-
+        """Exibe ranking formatado no terminal ordenado por acuracia de validacao."""
         if not self.records:
-            print("Nenhum registro para exibir ranking.")
             return
+
+        ranked = sorted(self.records, key=lambda r: (r["best_val_acc"], -r["best_val_mse"]), reverse=True)
 
         print("\n" + "=" * 88)
         print("  RANKING FINAL DO GRID SEARCH (Ordenado por Maior Acuracia de Validacao)")
         print("=" * 88)
-
-        # Ordenação decrescente pela melhor acurácia de validação e desempate pelo menor MSE
-        ranked = sorted(
-            self.records,
-            key=lambda r: (r["best_val_acc"], -r["best_val_mse"]),
-            reverse=True,
-        )
 
         header = (
             f"{'Rank':<5} {'Rodada':<7} {'H':<5} {'Ratio':<6} {'LR':<7} {'M':<5} {'P':<4} "
@@ -108,19 +95,18 @@ class GridSearchReporter:
         print("-" * len(header))
 
         for idx, r in enumerate(ranked[:top_k], start=1):
-            ratio_val = r.get("val_ratio", 0.1)
             print(
-                f"{idx:<5} {r['rodada']:<7} {r['hidden_neurons']:<5} {ratio_val:<6} {r['learn_rate']:<7} "
+                f"{idx:<5} {r['rodada']:<7} {r['hidden_neurons']:<5} {r.get('val_ratio', 0.1):<6} {r['learn_rate']:<7} "
                 f"{r['momentum']:<5} {r['patience']:<4} {r['epochs_exec']:<7} "
                 f"{r['best_val_acc']:>10.2f}%   {r['best_val_acc_epoch']:<13} {r['best_val_mse']:<10.5f}"
             )
 
         best = ranked[0]
-        ratio_best = best.get("val_ratio", 0.1)
         print("=" * 88)
         print("MELHOR COMBINACAO ENCONTRADA (Top 1):")
         print(
-            f"  Hidden={best['hidden_neurons']} | Ratio={ratio_best} | LR={best['learn_rate']} | Momentum={best['momentum']} | Patience={best['patience']}\n"
+            f"  Hidden={best['hidden_neurons']} | Ratio={best.get('val_ratio', 0.1)} | "
+            f"LR={best['learn_rate']} | Momentum={best['momentum']} | Patience={best['patience']}\n"
             f"  Acuracia de Validacao: {best['best_val_acc']:.2f}% (alcancada na epoca {best['best_val_acc_epoch']})\n"
             f"  MSE de Validacao: {best['best_val_mse']:.5f}\n"
             f"  Checkpoint: {best['checkpoint'] or 'Nao salvo (< threshold)'}"
@@ -128,8 +114,7 @@ class GridSearchReporter:
         print("=" * 88)
 
     def finalize_directory_name(self) -> str:
-        """Renomeia o diretorio de saida para incluir a melhor arquitetura e acuracia alcancadas."""
-
+        """Renomeia diretorio de saida com a melhor marca alcancada."""
         if not self.records:
             return self.output_dir
 
@@ -137,32 +122,19 @@ class GridSearchReporter:
         if not os.path.exists(clean_dir):
             return self.output_dir
 
-        ranked = sorted(
-            self.records,
-            key=lambda r: (r["best_val_acc"], -r["best_val_mse"]),
-            reverse=True,
-        )
+        ranked = sorted(self.records, key=lambda r: (r["best_val_acc"], -r["best_val_mse"]), reverse=True)
         best = ranked[0]
-        best_h = best["hidden_neurons"]
-        best_acc = best["best_val_acc"]
+        prefix = f"acc{best['best_val_acc']:.1f}_h{best['hidden_neurons']}_"
 
-        parent_dir = os.path.dirname(clean_dir)
         current_name = os.path.basename(clean_dir)
-
-        prefix = f"acc{best_acc:.1f}_h{best_h}_"
         if current_name.startswith(prefix):
             return self.output_dir
 
-        new_name = f"{prefix}{current_name}"
-        new_path = os.path.join(parent_dir, new_name)
-
+        new_path = os.path.join(os.path.dirname(clean_dir), f"{prefix}{current_name}")
         os.rename(clean_dir, new_path)
         self.output_dir = new_path
         print(f"\nDiretorio renomeado com a melhor marca: {new_path}")
 
-        # Salva o checkpoint final e registra o caminho gerado para automações
-        # Necessário para que o make full_grid_pipeline funcione
-        # devidamente de forma automatizada
         try:
             with open("models/grid_search/.latest_grid.txt", "w", encoding="utf-8") as f:
                 f.write(new_path.strip())

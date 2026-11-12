@@ -1,8 +1,8 @@
 import os
 
-from src.models import Layer, MLP
-from src.funcs import sigmoide_bipolar, deriv_sigmoide_bipolar
-from src.orchestrator import Orchestrator
+from src.core.funcs import sigmoide_bipolar, deriv_sigmoide_bipolar
+from src.core.models import Layer, MLP
+from src.training.orchestrator import Orchestrator
 
 
 NUM_EPOCHS = int(os.environ["NUM_EPOCHS"])

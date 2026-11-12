@@ -3,11 +3,12 @@ import os
 import shutil
 import sys
 
-from lab.deliverables import export_official_deliverables
-from lab.metrics import build_report_text, evaluate_test_set
-from lab.plots import plot_confusion_matrix, plot_learning_curves
-from src.funcs import deriv_sigmoide_bipolar, sigmoide_bipolar
-from src.mlp_persister import MLPPersister
+from lab.evaluation.deliverables import export_official_deliverables
+from lab.evaluation.metrics import evaluate_test_set
+from lab.evaluation.plots import plot_confusion_matrix, plot_learning_curves
+from lab.evaluation.reports import build_report_text
+from src.core.funcs import deriv_sigmoide_bipolar, sigmoide_bipolar
+from src.persistence.mlp_persister import MLPPersister
 
 
 class MLPEvaluator:
@@ -120,7 +121,7 @@ if __name__ == "__main__":
     if not model_arg:
         print("\nErro: Nenhum modelo .json informado para avaliacao.")
         print("Uso: make evaluate MODEL=caminho/do/modelo.json")
-        print(" ou: python3 -m lab.evaluator caminho/do/modelo.json\n")
+        print(" ou: python3 -m lab.evaluation.evaluator caminho/do/modelo.json\n")
         sys.exit(1)
 
     evaluator = MLPEvaluator(model_arg)
