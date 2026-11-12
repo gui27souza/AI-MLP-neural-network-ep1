@@ -8,8 +8,8 @@ from src.funcs import sigmoide_bipolar, deriv_sigmoide_bipolar
 from src.models import Layer, MLP
 from src.orchestrator import Orchestrator
 from src.mlp_persister import MLPPersister
+from src.initial_weights import get_initial_weights
 from lab.grid_search.reporter import GridSearchReporter
-from lab.grid_search.initial_weights import get_grid_search_initial_weights
 
 # =====
 
@@ -27,6 +27,7 @@ def pipeline(
     patience: int | None,
     output_dir: str,
     min_acc_threshold: float | None = None,
+    seed: int | None = 42,
 ) -> tuple[Orchestrator, str | None]:
     """
     Constrói a arquitetura, injeta pesos determinísticos e executa o ciclo de treino.
@@ -42,10 +43,11 @@ def pipeline(
         derivative_activation=deriv_sigmoide_bipolar,
     )
 
-    init_weights = get_grid_search_initial_weights(
+    init_weights = get_initial_weights(
         hidden_neurons=hidden_neurons,
         num_inputs=num_inputs,
         num_outputs=num_outputs,
+        seed=seed if seed is not None else 42,
     )
 
     mlp = MLP(
@@ -68,6 +70,7 @@ def pipeline(
         val_targets=test_y,
         target_mse=target_mse,
         patience=patience,
+        seed=seed,
     )
 
     orch.run(print_epochs_interval=5)

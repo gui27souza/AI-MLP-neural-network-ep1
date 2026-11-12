@@ -157,6 +157,7 @@ class MLPPersister:
                     "max_epochs": orch.epochs,
                     "target_mse": orch.target_mse,
                     "patience": orch.patience,
+                    "seed": getattr(orch, "seed", None),
                 },
                 "stopping_info": {
                     "stopped_early": orch.stopped_early,

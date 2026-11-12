@@ -29,6 +29,7 @@ class Orchestrator:
         val_targets: list[list[float]] | None = None,
         target_mse: float | None = None,
         patience: int | None = None,
+        seed: int | None = 42,
     ):
         self.mlp = mlp
         self.epochs = epochs
@@ -38,6 +39,8 @@ class Orchestrator:
         self.val_targets = val_targets
         self.target_mse = target_mse
         self.patience = patience
+        self.seed = seed
+        self.rng = random.Random(seed) if seed is not None else random.Random()
 
         # Controle de tempo de execução
         self.start_ts: float = 0.0
@@ -103,9 +106,9 @@ class Orchestrator:
 
         for epoch in range(1, self.epochs + 1):
 
-            # Embaralhamento Estocástico
+            # Embaralhamento Estocástico com gerador determinístico
             # Ajuda na fuga de mínimos locais e platôs de gradiente
-            random.shuffle(index)
+            self.rng.shuffle(index)
             inputs_shuffled = [self.inputs[i] for i in index]
             targets_shuffled = [self.targets[i] for i in index]
 

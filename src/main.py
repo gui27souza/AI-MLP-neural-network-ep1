@@ -4,6 +4,7 @@ import os
 
 from src.dataset_loader import DatasetLoader
 from src.funcs import sigmoide_bipolar, deriv_sigmoide_bipolar
+from src.initial_weights import get_initial_weights
 from src.models import Layer, MLP
 from src.orchestrator import Orchestrator
 from src.mlp_persister import MLPPersister
@@ -26,6 +27,9 @@ PATIENCE = int(_patience_env) if _patience_env else None
 PRINT_INTERVAL = int(os.environ["PRINT_INTERVAL"])
 VAL_RATIO = float(os.environ["VAL_RATIO"])
 
+_seed_env = os.getenv("SEED", "42")
+SEED = int(_seed_env) if _seed_env.lower() not in ("none", "") else None
+
 # =====
 
 
@@ -44,6 +48,18 @@ if __name__ == "__main__":
         activation_func=sigmoide_bipolar,
         derivative_activation=deriv_sigmoide_bipolar,
     )
+
+    init_weights = (
+        get_initial_weights(
+            hidden_neurons=HIDDEN_NEURONS,
+            num_inputs=num_inputs,
+            num_outputs=num_outputs,
+            seed=SEED if SEED is not None else 42,
+        )
+        if SEED is not None
+        else None
+    )
+
     mlp = MLP(
         num_inputs=num_inputs,
         num_outputs=num_outputs,
@@ -52,6 +68,7 @@ if __name__ == "__main__":
         output_activation=sigmoide_bipolar,
         output_deriv_activation=deriv_sigmoide_bipolar,
         momentum=MOMENTUM,
+        initial_weights=init_weights,
     )
 
     # == Preparação do orquestrador ====
@@ -64,6 +81,7 @@ if __name__ == "__main__":
         val_targets=test_y,
         target_mse=TARGET_MSE,
         patience=PATIENCE,
+        seed=SEED,
     )
 
     # == Execução do treinamento com salvamento resiliente ====
@@ -75,4 +93,9 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("\n\nTreinamento interrompido manualmente (Ctrl+C). Salvando progresso...")
     finally:
-        MLPPersister.save_checkpoint(orch)
+        # Salva o checkpoint final e registra o caminho gerado para automações
+        # Necessário para que o make full_pipeline funcione devidamente de forma automatizada
+        saved_path = MLPPersister.save_checkpoint(orch)
+        if saved_path:
+            with open("models/.latest_model.txt", "w", encoding="utf-8") as f:
+                f.write(saved_path.strip())

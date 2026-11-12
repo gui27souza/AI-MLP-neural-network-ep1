@@ -1,13 +1,13 @@
 import numpy as np
 
-GRID_SEARCH_SEED = 42
+DEFAULT_SEED = 42
 
 
-def get_grid_search_initial_weights(
+def get_initial_weights(
     hidden_neurons: int,
     num_inputs: int = 120,
     num_outputs: int = 26,
-    seed: int = GRID_SEARCH_SEED,
+    seed: int = DEFAULT_SEED,
     weight_range: tuple[float, float] = (-0.2, 0.2),
 ) -> dict:
     """
@@ -42,3 +42,7 @@ def get_grid_search_initial_weights(
             "weights": out_weights,
         },
     }
+
+
+# Alias para compatibilidade retroativa
+get_grid_search_initial_weights = get_initial_weights
