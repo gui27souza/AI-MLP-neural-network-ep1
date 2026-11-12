@@ -1,0 +1,34 @@
+==============================================================================
+  RELATORIO DE AVALIACAO DO MODELO: mlp_caracteres_acc87.4_h48_v3.json
+==============================================================================
+  Amostras de Teste/Validacao : 397 (Ratio=0.3)
+  Acuracia Geral              : 87.41%
+  MSE de Teste                : 0.03852
+------------------------------------------------------------------------------
+
+[TOP 5 CARACTERES COM MAIOR DIFICULDADE (Menor Acuracia)]
+  Letra 'O':  66.67% (10/15 acertos)
+  Letra 'W':  75.00% (12/16 acertos)
+  Letra 'X':  75.00% (12/16 acertos)
+  Letra 'B':  80.00% (12/15 acertos)
+  Letra 'H':  80.00% (12/15 acertos)
+
+[TOP 5 CARACTERES MAIS RECONHECIDOS (Maior Acuracia)]
+  Letra 'Y': 100.00% (16/16 acertos)
+  Letra 'T': 100.00% (16/16 acertos)
+  Letra 'P': 100.00% (15/15 acertos)
+  Letra 'Z':  93.75% (15/16 acertos)
+  Letra 'S':  93.33% (14/15 acertos)
+
+[MAIORES CONFUSOES OBSERVADAS (Real -> Predito)]
+  Real 'W' classificado como 'H': 2 ocorrencia(s)
+  Real 'O' classificado como 'G': 2 ocorrencia(s)
+  Real 'X' classificado como 'K': 2 ocorrencia(s)
+  Real 'W' classificado como 'N': 1 ocorrencia(s)
+  Real 'M' classificado como 'N': 1 ocorrencia(s)
+  Real 'M' classificado como 'H': 1 ocorrencia(s)
+  Real 'J' classificado como 'I': 1 ocorrencia(s)
+  Real 'Q' classificado como 'T': 1 ocorrencia(s)
+  Real 'I' classificado como 'T': 1 ocorrencia(s)
+  Real 'O' classificado como 'U': 1 ocorrencia(s)
+==============================================================================

@@ -34,5 +34,5 @@
   - Teste: ampliação de patience para 15 na melhor configuração limpa (H=48, LR=0.025, M=0.55).
   - Resultado: superação do platô anterior, registrando pico na época 22 com **87.41%** de acurácia de teste e menor MSE global (**0.03852**).
   - Convergência teórica: execução finalizada na época 33 por atingimento do erro alvo formal (`MSE treino = 0.000984 <= 0.001000`).
-
+  - Levei o patience ao limite, coloquei em 50, mas a época 33 de fato foi a melhor, a conclusão desse experimento foi que o modelo de fato tem seu ápice em 33 com acc87.41 e depois começa a perder aos poucos a capacidade de generalização
 
