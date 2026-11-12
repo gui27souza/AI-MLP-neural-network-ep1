@@ -1,59 +1,53 @@
-import os
 from dataclasses import dataclass
+import os
+from typing import Callable, TypeVar
 
 from src.data.data_augmentation import augment_bipolar_dataset
 
+T = TypeVar("T")
 
-def env_bool(key: str, default: bool = False) -> bool:
-    """Converte valor de variavel de ambiente para booleano."""
+
+# =========================================================
+# Parsers Utilitários de Variáveis de Ambiente (Fail Fast)
+# =========================================================
+
+def _env(key: str, cast: Callable[[str], T], default: T | None = None, required: bool = False) -> T | None:
     val = os.getenv(key)
-    if val is None or val.strip() == "":
-        return default
-    return val.strip().lower() in ("1", "true", "yes")
-
-
-def env_int(key: str, default: int | None = None, required: bool = False) -> int | None:
-    """Converte valor de variavel de ambiente para inteiro."""
-    val = os.getenv(key)
-    if val is None or val.strip() == "":
+    if val is None or not val.strip():
         if required:
-            raise KeyError(f"Variavel de ambiente obrigatoria '{key}' nao foi informada.")
+            raise KeyError(f"Variável de ambiente obrigatória '{key}' não foi informada.")
         return default
-    return int(val.strip())
+    return cast(val.strip())
 
 
-def env_float(key: str, default: float | None = None, required: bool = False) -> float | None:
-    """Converte valor de variavel de ambiente para ponto flutuante."""
+def _env_list(key: str, cast: Callable[[str], T], default: list[T] | None = None, required: bool = False) -> list[T]:
     val = os.getenv(key)
-    if val is None or val.strip() == "":
+    if val is None or not val.strip():
         if required:
-            raise KeyError(f"Variavel de ambiente obrigatoria '{key}' nao foi informada.")
-        return default
-    return float(val.strip())
-
-
-def env_list(key: str, default: list, cast: type) -> list:
-    """Converte string separada por virgula em lista tipada."""
-    val = os.getenv(key)
-    if not val:
-        return default
+            raise KeyError(f"Variável de ambiente obrigatória '{key}' não foi informada.")
+        return default if default is not None else []
     return [cast(x.strip()) for x in val.split(",") if x.strip()]
 
 
-def env_seed(key: str = "SEED", default: int | None = 42) -> int | None:
-    """Converte variavel de seed para inteiro ou None se desativada."""
+def _env_bool(key: str, default: bool = False) -> bool:
     val = os.getenv(key)
-    if val is None or val.strip() == "":
-        return default
-    clean = val.strip().lower()
-    if clean in ("none", "null"):
-        return None
-    return int(clean)
+    return val.strip().lower() in ("1", "true", "yes") if val and val.strip() else default
 
+
+def _env_seed(key: str = "SEED", default: int | None = 42) -> int | None:
+    val = os.getenv(key)
+    if not val or not val.strip():
+        return default
+    return None if val.strip().lower() in ("none", "null") else int(val.strip())
+
+
+# ============================
+# Dataclasses de Configuração
+# ============================
 
 @dataclass(frozen=True)
 class AugmentConfig:
-    """Configuracao de Data Augmentation Bipolar."""
+    """Configuração de Data Augmentation Bipolar."""
     enabled: bool = False
     noise_rate: float = 0.05
     copies: int = 1
@@ -61,9 +55,9 @@ class AugmentConfig:
     @classmethod
     def from_env(cls) -> "AugmentConfig":
         return cls(
-            enabled=env_bool("AUGMENT_DATA", default=False),
-            noise_rate=env_float("NOISE_RATE", default=0.05),
-            copies=env_int("AUGMENT_COPIES", default=1),
+            enabled=_env_bool("AUGMENT_DATA", default=False),
+            noise_rate=_env("NOISE_RATE", float, default=0.05),
+            copies=_env("AUGMENT_COPIES", int, default=1),
         )
 
     def apply(
@@ -72,27 +66,22 @@ class AugmentConfig:
         train_y: list[list[float]],
         seed: int = 42,
     ) -> tuple[list[list[float]], list[list[float]]]:
-        """Aplica aumento de dados com ruido bipolar se habilitado."""
         if not self.enabled:
             return train_x, train_y
         return augment_bipolar_dataset(
-            train_x,
-            train_y,
-            noise_rate=self.noise_rate,
-            copies_per_sample=self.copies,
-            seed=seed,
+            train_x, train_y, noise_rate=self.noise_rate, copies_per_sample=self.copies, seed=seed
         )
 
 
 @dataclass(frozen=True)
 class TrainConfig:
-    """Configuracao de treino individual (src/main.py)."""
+    """Configuração de treino individual (src/main.py)."""
     epochs: int
     learn_rate: float
     hidden_neurons: int
     momentum: float
-    print_interval: int
     val_ratio: float
+    print_interval: int
     target_mse: float | None
     patience: int | None
     seed: int | None
@@ -101,50 +90,44 @@ class TrainConfig:
     @classmethod
     def from_env(cls) -> "TrainConfig":
         return cls(
-            epochs=env_int("NUM_EPOCHS", required=True),
-            learn_rate=env_float("LEARN_RATE", required=True),
-            hidden_neurons=env_int("HIDDEN_NEURONS", required=True),
-            momentum=env_float("MOMENTUM", required=True),
-            print_interval=env_int("PRINT_INTERVAL", default=5),
-            val_ratio=env_float("VAL_RATIO", default=0.3),
-            target_mse=env_float("TARGET_MSE", default=None),
-            patience=env_int("PATIENCE", default=None),
-            seed=env_seed("SEED", default=42),
+            epochs=_env("NUM_EPOCHS", int, required=True),
+            learn_rate=_env("LEARN_RATE", float, required=True),
+            hidden_neurons=_env("HIDDEN_NEURONS", int, required=True),
+            momentum=_env("MOMENTUM", float, required=True),
+            val_ratio=_env("VAL_RATIO", float, required=True),
+            print_interval=_env("PRINT_INTERVAL", int, default=5),
+            target_mse=_env("TARGET_MSE", float, default=None),
+            patience=_env("PATIENCE", int, default=None),
+            seed=_env_seed("SEED", default=42),
             augment=AugmentConfig.from_env(),
         )
 
 
 @dataclass(frozen=True)
 class GridSearchConfig:
-    """Configuracao para exploracao em grade (src/grid_search.py)."""
+    """Configuração para exploração em grade (src/experiments/grid_search.py)."""
     max_epochs: int
-    target_mse: float | None
-    min_acc_threshold: float
-    seed: int | None
     val_ratios: list[float]
     hidden_neurons: list[int]
     learn_rates: list[float]
     momentums: list[float]
     patiences: list[int]
+    target_mse: float | None
+    min_acc_threshold: float
+    seed: int | None
     augment: AugmentConfig
 
     @classmethod
     def from_env(cls) -> "GridSearchConfig":
-        lr_key = "LEARNING_RATES" if "LEARNING_RATES" in os.environ else "LEARN_RATE"
-        m_key = "MOMENTUMS" if "MOMENTUMS" in os.environ else "MOMENTUM"
-        epochs = env_int("MAX_EPOCHS")
-        if epochs is None:
-            epochs = env_int("NUM_EPOCHS", default=120)
-
         return cls(
-            max_epochs=epochs,
-            target_mse=env_float("TARGET_MSE", default=0.001),
-            min_acc_threshold=env_float("MIN_ACC_THRESHOLD", default=75.0),
-            seed=env_seed("SEED", default=42),
-            val_ratios=env_list("VAL_RATIOS", [0.30], float),
-            hidden_neurons=env_list("HIDDEN_NEURONS", [16, 48, 64], int),
-            learn_rates=env_list(lr_key, [0.008, 0.010, 0.025], float),
-            momentums=env_list(m_key, [0.15, 0.55, 0.85], float),
-            patiences=env_list("PATIENCE", [6], int),
+            max_epochs=_env("MAX_EPOCHS", int, required=True),
+            val_ratios=_env_list("VAL_RATIOS", float, required=True),
+            hidden_neurons=_env_list("HIDDEN_NEURONS", int, required=True),
+            learn_rates=_env_list("LEARN_RATE", float, required=True),
+            momentums=_env_list("MOMENTUM", float, required=True),
+            patiences=_env_list("PATIENCE", int, required=True),
+            target_mse=_env("TARGET_MSE", float, default=None),
+            min_acc_threshold=_env("MIN_ACC_THRESHOLD", float, default=75.0),
+            seed=_env_seed("SEED", default=42),
             augment=AugmentConfig.from_env(),
         )
