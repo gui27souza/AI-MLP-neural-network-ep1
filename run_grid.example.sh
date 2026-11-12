@@ -9,9 +9,8 @@ export TARGET_MSE=0.001
 export MIN_ACC_THRESHOLD=75.0
 export SEED=42
 
-# Data Augmentation Bipolar (0 = desativado, 1 = ativado)
-export AUGMENT_DATA=0
-export NOISE_RATE=0.05
+# Data Augmentation Bipolar (0.0 = limpo, ex: "0.0,0.03" para comparar com/sem ruido)
+export NOISE_RATES="0.0"
 export AUGMENT_COPIES=1
 
 # Grade de Busca (valores separados por vírgula)

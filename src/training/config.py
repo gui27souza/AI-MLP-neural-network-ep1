@@ -48,15 +48,17 @@ def _env_seed(key: str = "SEED", default: int | None = 42) -> int | None:
 @dataclass(frozen=True)
 class AugmentConfig:
     """Configuração de Data Augmentation Bipolar."""
-    enabled: bool = False
-    noise_rate: float = 0.05
+    noise_rate: float = 0.0
     copies: int = 1
+
+    @property
+    def enabled(self) -> bool:
+        return self.noise_rate > 0.0
 
     @classmethod
     def from_env(cls) -> "AugmentConfig":
         return cls(
-            enabled=_env_bool("AUGMENT_DATA", default=False),
-            noise_rate=_env("NOISE_RATE", float, default=0.05),
+            noise_rate=_env("NOISE_RATE", float, default=0.0),
             copies=_env("AUGMENT_COPIES", int, default=1),
         )
 
@@ -112,13 +114,19 @@ class GridSearchConfig:
     learn_rates: list[float]
     momentums: list[float]
     patiences: list[int]
+    noise_rates: list[float]
     target_mse: float | None
     min_acc_threshold: float
     seed: int | None
-    augment: AugmentConfig
+    augment_copies: int = 1
 
     @classmethod
     def from_env(cls) -> "GridSearchConfig":
+        noise_rates = _env_list("NOISE_RATES", float, default=None)
+        if noise_rates is None or len(noise_rates) == 0:
+            single_noise = _env("NOISE_RATE", float, default=0.0)
+            noise_rates = [single_noise]
+
         return cls(
             max_epochs=_env("MAX_EPOCHS", int, required=True),
             val_ratios=_env_list("VAL_RATIOS", float, required=True),
@@ -126,8 +134,9 @@ class GridSearchConfig:
             learn_rates=_env_list("LEARN_RATE", float, required=True),
             momentums=_env_list("MOMENTUM", float, required=True),
             patiences=_env_list("PATIENCE", int, required=True),
+            noise_rates=noise_rates,
             target_mse=_env("TARGET_MSE", float, default=None),
             min_acc_threshold=_env("MIN_ACC_THRESHOLD", float, default=75.0),
             seed=_env_seed("SEED", default=42),
-            augment=AugmentConfig.from_env(),
+            augment_copies=_env("AUGMENT_COPIES", int, default=1),
         )

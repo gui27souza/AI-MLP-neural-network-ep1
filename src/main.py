@@ -62,6 +62,7 @@ if __name__ == "__main__":
         target_mse=cfg.target_mse,
         patience=cfg.patience,
         seed=cfg.seed,
+        noise_rate=cfg.augment.noise_rate,
     )
 
     # == Execução do treinamento com salvamento resiliente ====

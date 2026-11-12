@@ -21,6 +21,7 @@ class GridSearchReporter:
         patience: int,
         orch: Orchestrator,
         val_ratio: float = 0.1,
+        noise_rate: float = 0.0,
         checkpoint_path: str | None = None,
     ) -> dict:
         """Registra metricas da rodada de grid search."""
@@ -45,6 +46,7 @@ class GridSearchReporter:
             "learn_rate": learn_rate,
             "momentum": momentum,
             "patience": patience,
+            "noise_rate": noise_rate,
             "epochs_exec": orch.total_epochs,
             "stopped_early": orch.stopped_early,
             "final_train_acc": round((train_accs[-1] * 100) if train_accs else 0.0, 2),
@@ -88,7 +90,7 @@ class GridSearchReporter:
         print("=" * 88)
 
         header = (
-            f"{'Rank':<5} {'Rodada':<7} {'H':<5} {'Ratio':<6} {'LR':<7} {'M':<5} {'P':<4} "
+            f"{'Rank':<5} {'Rodada':<7} {'H':<5} {'Ratio':<6} {'LR':<7} {'M':<5} {'P':<4} {'Noise':<6} "
             f"{'Epocas':<7} {'Best Val Acc':<14} {'Melhor Epoca':<13} {'Best MSE':<10}"
         )
         print(header)
@@ -97,7 +99,7 @@ class GridSearchReporter:
         for idx, r in enumerate(ranked[:top_k], start=1):
             print(
                 f"{idx:<5} {r['rodada']:<7} {r['hidden_neurons']:<5} {r.get('val_ratio', 0.1):<6} {r['learn_rate']:<7} "
-                f"{r['momentum']:<5} {r['patience']:<4} {r['epochs_exec']:<7} "
+                f"{r['momentum']:<5} {r['patience']:<4} {r.get('noise_rate', 0.0):<6.2f} {r['epochs_exec']:<7} "
                 f"{r['best_val_acc']:>10.2f}%   {r['best_val_acc_epoch']:<13} {r['best_val_mse']:<10.5f}"
             )
 
@@ -106,7 +108,7 @@ class GridSearchReporter:
         print("MELHOR COMBINACAO ENCONTRADA (Top 1):")
         print(
             f"  Hidden={best['hidden_neurons']} | Ratio={best.get('val_ratio', 0.1)} | "
-            f"LR={best['learn_rate']} | Momentum={best['momentum']} | Patience={best['patience']}\n"
+            f"LR={best['learn_rate']} | Momentum={best['momentum']} | Patience={best['patience']} | Noise={best.get('noise_rate', 0.0)}\n"
             f"  Acuracia de Validacao: {best['best_val_acc']:.2f}% (alcancada na epoca {best['best_val_acc_epoch']})\n"
             f"  MSE de Validacao: {best['best_val_mse']:.5f}\n"
             f"  Checkpoint: {best['checkpoint'] or 'Nao salvo (< threshold)'}"

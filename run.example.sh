@@ -16,9 +16,8 @@ export MOMENTUM=0.55
 export PATIENCE=6
 export TARGET_MSE=0.001
 
-# Data Augmentation Bipolar (0 = desativado, 1 = ativado)
-export AUGMENT_DATA=0
-export NOISE_RATE=0.05
+# Data Augmentation Bipolar (0.0 = desativado/limpo, > 0.0 = taxa de inversao)
+export NOISE_RATE=0.0
 export AUGMENT_COPIES=1
 
 # ===

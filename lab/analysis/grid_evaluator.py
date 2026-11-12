@@ -30,6 +30,7 @@ class GridSearchEvaluator:
                     "lr": float(r["learn_rate"]),
                     "momentum": float(r["momentum"]),
                     "patience": int(r["patience"]),
+                    "noise_rate": float(r["noise_rate"]) if "noise_rate" in r and r["noise_rate"] else 0.0,
                     "val_ratio": float(r["val_ratio"]),
                     "epochs_exec": int(r["epochs_exec"]),
                     "stopped_early": r["stopped_early"].lower() == "true",
@@ -60,7 +61,7 @@ class GridSearchEvaluator:
             "## 1. Melhor Modelo da Execucao\n",
             f"- **Rodada:** #{best['rodada']}",
             f"- **Topologia:** `H = {best['hidden']}`",
-            f"- **Hiperparametros:** `LR = {best['lr']}`, `Momentum = {best['momentum']}`, `Patience = {best['patience']}`",
+            f"- **Hiperparametros:** `LR = {best['lr']}`, `Momentum = {best['momentum']}`, `Patience = {best['patience']}`, `Noise = {best.get('noise_rate', 0.0)}`",
             f"- **Melhor Acuracia de Validacao:** **{best['best_val_acc']:.2f}%**",
             f"- **Menor MSE de Validacao:** **{best['best_val_mse']:.5f}**",
             f"- **Epocas Executadas:** {best['epochs_exec']} ({best['duracao_s']:.2f}s)",
@@ -77,15 +78,33 @@ class GridSearchEvaluator:
             mean_time = sum(time_by_h[h]) / len(time_by_h[h])
             md.append(f"| **H={h}** | {len(acc_by_h[h])} | {mean_acc:.2f}% | **{max_acc:.2f}%** | **{min_mse:.5f}** | {mean_time:.2f}s |")
 
+        # Comparativo por Ruído (se houver variação de ruído ou ruído ativo)
+        noise_vals = sorted(list(set(r.get("noise_rate", 0.0) for r in self.rows)))
+        if len(noise_vals) > 1 or (len(noise_vals) == 1 and noise_vals[0] > 0.0):
+            md.extend([
+                "\n## 3. Comparativo por Taxa de Ruido (Data Augmentation)\n",
+                "| Taxa de Ruido | Total Modelos | Acuracia Media | Acuracia Maxima | MSE Minimo | Tempo Medio (s) |",
+                "| :---: | :---: | :---: | :---: | :---: | :---: |",
+            ])
+            for n_rate in noise_vals:
+                sub_noise = [r for r in self.rows if r.get("noise_rate", 0.0) == n_rate]
+                mean_acc_n = sum(r["best_val_acc"] for r in sub_noise) / len(sub_noise)
+                max_acc_n = max(r["best_val_acc"] for r in sub_noise)
+                min_mse_n = min(r["best_val_mse"] for r in sub_noise)
+                mean_time_n = sum(r["duracao_s"] for r in sub_noise) / len(sub_noise)
+                label_n = f"{n_rate * 100:.1f}%" if n_rate > 0 else "0.0% (Limpo)"
+                md.append(f"| **{label_n}** | {len(sub_noise)} | {mean_acc_n:.2f}% | **{max_acc_n:.2f}%** | **{min_mse_n:.5f}** | {mean_time_n:.2f}s |")
+
+        section_num = 4 if (len(noise_vals) > 1 or (len(noise_vals) == 1 and noise_vals[0] > 0.0)) else 3
         md.extend([
-            "\n## 3. Top 5 Melhores Modelos\n",
-            "| Posicao | Rodada | H | LR | Momentum | Acc Val | MSE Val | Epocas | Tempo | Checkpoint |",
-            "| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |",
+            f"\n## {section_num}. Top 5 Melhores Modelos\n",
+            "| Posicao | Rodada | H | LR | Momentum | Noise | Acc Val | MSE Val | Epocas | Tempo | Checkpoint |",
+            "| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |",
         ])
 
         for rank, r in enumerate(sorted_rows[:5], start=1):
             md.append(
-                f"| #{rank} | Rodada {r['rodada']} | H={r['hidden']} | {r['lr']} | {r['momentum']} | "
+                f"| #{rank} | Rodada {r['rodada']} | H={r['hidden']} | {r['lr']} | {r['momentum']} | {r.get('noise_rate', 0.0):.2f} | "
                 f"**{r['best_val_acc']:.2f}%** | {r['best_val_mse']:.5f} | {r['epochs_exec']} | {r['duracao_s']:.1f}s | `{r['checkpoint']}` |"
             )
 

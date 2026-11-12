@@ -135,6 +135,8 @@ class MLPPersister:
                 "dataset_info": {
                     "train_samples": len(orch.inputs),
                     "val_samples": len(orch.val_inputs) if orch.val_inputs else 0,
+                    "noise_rate": getattr(orch, "noise_rate", 0.0),
+                    "is_augmented": getattr(orch, "noise_rate", 0.0) > 0.0,
                 },
                 "training_params": {
                     "max_epochs": orch.epochs,

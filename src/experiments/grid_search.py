@@ -6,6 +6,7 @@ from itertools import product
 from src.core.funcs import sigmoide_bipolar, deriv_sigmoide_bipolar
 from src.core.initial_weights import get_initial_weights
 from src.core.models import Layer, MLP
+from src.data.data_augmentation import augment_bipolar_dataset
 from src.data.dataset_loader import DatasetLoader
 from src.experiments.grid_reporter import GridSearchReporter
 from src.persistence.mlp_persister import MLPPersister
@@ -29,6 +30,7 @@ def pipeline(
     output_dir: str,
     min_acc_threshold: float | None = None,
     seed: int | None = 42,
+    noise_rate: float = 0.0,
 ) -> tuple[Orchestrator, str | None]:
     """
     Constrói a arquitetura, injeta pesos determinísticos e executa o ciclo de treino.
@@ -72,6 +74,7 @@ def pipeline(
         target_mse=target_mse,
         patience=patience,
         seed=seed,
+        noise_rate=noise_rate,
     )
 
     orch.run(print_epochs_interval=5)
@@ -107,6 +110,8 @@ if __name__ == "__main__":
 
     # Cache do dataset particionado por proporção de teste (evita releitura de disco)
     dataset_cache: dict[float, tuple] = {}
+    # Cache do treino aumentado indexado por (val_ratio, noise_rate)
+    augmented_cache: dict[tuple[float, float], tuple[list[list[float]], list[list[float]]]] = {}
 
     combinations = list(
         product(
@@ -115,16 +120,32 @@ if __name__ == "__main__":
             cfg.learn_rates,
             cfg.momentums,
             cfg.patiences,
+            cfg.noise_rates,
         )
     )
     total_combinations = len(combinations)
 
-    for current, (val_ratio, hidden, lr, momentum, patience) in enumerate(combinations, start=1):
+    for current, (val_ratio, hidden, lr, momentum, patience, noise_rate) in enumerate(combinations, start=1):
         if val_ratio not in dataset_cache:
             dataset_cache[val_ratio] = DatasetLoader.load_caracteres_completo(val_ratio=val_ratio)
 
-        train_x, train_y, test_x, test_y, _ = dataset_cache[val_ratio]
-        train_x, train_y = cfg.augment.apply(train_x, train_y, seed=cfg.seed if cfg.seed is not None else 42)
+        raw_train_x, raw_train_y, test_x, test_y, _ = dataset_cache[val_ratio]
+
+        cache_key = (val_ratio, noise_rate)
+        if cache_key not in augmented_cache:
+            if noise_rate > 0.0:
+                aug_x, aug_y = augment_bipolar_dataset(
+                    raw_train_x,
+                    raw_train_y,
+                    noise_rate=noise_rate,
+                    copies_per_sample=cfg.augment_copies,
+                    seed=cfg.seed if cfg.seed is not None else 42,
+                )
+                augmented_cache[cache_key] = (aug_x, aug_y)
+            else:
+                augmented_cache[cache_key] = (raw_train_x, raw_train_y)
+
+        train_x, train_y = augmented_cache[cache_key]
 
         print(
             f"\n[RODADA {current}/{total_combinations}] "
@@ -132,7 +153,8 @@ if __name__ == "__main__":
             f"H={hidden} | "
             f"LR={lr} | "
             f"M={momentum} | "
-            f"P={patience}"
+            f"P={patience} | "
+            f"Noise={noise_rate}"
         )
 
         orch, saved_file = pipeline(
@@ -149,6 +171,7 @@ if __name__ == "__main__":
             output_dir=OUTPUT_DIR,
             min_acc_threshold=cfg.min_acc_threshold,
             seed=cfg.seed,
+            noise_rate=noise_rate,
         )
 
         reporter.record_trial(
@@ -159,6 +182,7 @@ if __name__ == "__main__":
             patience=patience,
             orch=orch,
             val_ratio=val_ratio,
+            noise_rate=noise_rate,
             checkpoint_path=saved_file,
         )
 

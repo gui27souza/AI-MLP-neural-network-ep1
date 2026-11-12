@@ -18,6 +18,7 @@ class Orchestrator:
         target_mse: float | None = None,
         patience: int | None = None,
         seed: int | None = 42,
+        noise_rate: float = 0.0,
     ):
         self.mlp = mlp
         self.epochs = epochs
@@ -28,6 +29,7 @@ class Orchestrator:
         self.target_mse = target_mse
         self.patience = patience
         self.seed = seed
+        self.noise_rate = noise_rate
         self.rng = random.Random(seed) if seed is not None else random.Random()
 
         self.start_ts: float = 0.0
