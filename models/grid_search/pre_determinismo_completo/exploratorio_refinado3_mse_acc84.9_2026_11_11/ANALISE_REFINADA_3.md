@@ -1,6 +1,6 @@
 # Relatorio Analitico: Grid Search Refinado 3 (O Minimo Quadratico)
 
-Este documento consolida a analise tecnica e empirica das 12 combinacoes executadas no **Grid Search Refinado 3**, com dados brutos registrados em [summary.csv](file:///Users/guilhermesouza/Desktop/Fauldade-trabalhos/AI-MLP-neural-network-ep1/models/grid_search/acc84.9_h64_2026_11_11_10_41/summary.csv).
+Este documento consolida a analise tecnica e empirica das 12 combinacoes executadas no **Grid Search Refinado 3**, com dados brutos registrados em [summary.csv](models/grid_search/acc84.9_h64_2026_11_11_10_41/summary.csv).
 
 ---
 
@@ -26,13 +26,13 @@ Este documento consolida a analise tecnica e empirica das 12 combinacoes executa
 
 | Rank | Rodada | H | LR | Mom | Acc Val (%) | MSE Val | Epocas | Best Ep | Train Acc (%) | Gap (%) | Duracao | Checkpoint |
 |:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---|
-| **1** | **11** | **64** | **0.008** | **0.75** | **84.89** | **0.04232** | **25** | **19** | **99.46** | **14.57** | **33.5s** | [gs_acc84.9_h64.json](file:///Users/guilhermesouza/Desktop/Fauldade-trabalhos/AI-MLP-neural-network-ep1/models/grid_search/acc84.9_h64_2026_11_11_10_41/gs_acc84.9_h64.json) |
-| **2** | 9 | 64 | 0.006 | 0.75 | 84.63 | 0.04236 | 24 | 18 | 99.57 | 14.94 | 32.9s | [gs_acc84.6_h64.json](file:///Users/guilhermesouza/Desktop/Fauldade-trabalhos/AI-MLP-neural-network-ep1/models/grid_search/acc84.9_h64_2026_11_11_10_41/gs_acc84.6_h64.json) |
-| **3** | 12 | 64 | 0.008 | 0.85 | 84.38 | **0.03942** | 32 | 16 | 99.57 | 15.19 | 42.9s | [gs_acc84.4_h64_v3.json](file:///Users/guilhermesouza/Desktop/Fauldade-trabalhos/AI-MLP-neural-network-ep1/models/grid_search/acc84.9_h64_2026_11_11_10_41/gs_acc84.4_h64_v3.json) |
-| **4** | 10 | 64 | 0.006 | 0.85 | 84.38 | 0.04217 | 19 | 13 | 99.46 | 15.08 | 24.9s | [gs_acc84.4_h64_v2.json](file:///Users/guilhermesouza/Desktop/Fauldade-trabalhos/AI-MLP-neural-network-ep1/models/grid_search/acc84.9_h64_2026_11_11_10_41/gs_acc84.4_h64_v2.json) |
-| **5** | 8 | 64 | 0.004 | 0.85 | 84.38 | 0.04274 | 27 | 21 | 99.35 | 14.97 | 41.1s | [gs_acc84.4_h64.json](file:///Users/guilhermesouza/Desktop/Fauldade-trabalhos/AI-MLP-neural-network-ep1/models/grid_search/acc84.9_h64_2026_11_11_10_41/gs_acc84.4_h64.json) |
-| **6** | 4 | 56 | 0.006 | 0.85 | 84.13 | 0.04468 | 16 | 10 | 99.25 | 15.12 | 19.0s | [gs_acc84.1_h56.json](file:///Users/guilhermesouza/Desktop/Fauldade-trabalhos/AI-MLP-neural-network-ep1/models/grid_search/acc84.9_h64_2026_11_11_10_41/gs_acc84.1_h56.json) |
-| **7** | 7 | 64 | 0.004 | 0.75 | 84.13 | 0.04482 | 26 | 20 | 99.14 | 15.01 | 37.8s | [gs_acc84.1_h64.json](file:///Users/guilhermesouza/Desktop/Fauldade-trabalhos/AI-MLP-neural-network-ep1/models/grid_search/acc84.9_h64_2026_11_11_10_41/gs_acc84.1_h64.json) |
+| **1** | **11** | **64** | **0.008** | **0.75** | **84.89** | **0.04232** | **25** | **19** | **99.46** | **14.57** | **33.5s** | [gs_acc84.9_h64.json](models/grid_search/acc84.9_h64_2026_11_11_10_41/gs_acc84.9_h64.json) |
+| **2** | 9 | 64 | 0.006 | 0.75 | 84.63 | 0.04236 | 24 | 18 | 99.57 | 14.94 | 32.9s | [gs_acc84.6_h64.json](models/grid_search/acc84.9_h64_2026_11_11_10_41/gs_acc84.6_h64.json) |
+| **3** | 12 | 64 | 0.008 | 0.85 | 84.38 | **0.03942** | 32 | 16 | 99.57 | 15.19 | 42.9s | [gs_acc84.4_h64_v3.json](models/grid_search/acc84.9_h64_2026_11_11_10_41/gs_acc84.4_h64_v3.json) |
+| **4** | 10 | 64 | 0.006 | 0.85 | 84.38 | 0.04217 | 19 | 13 | 99.46 | 15.08 | 24.9s | [gs_acc84.4_h64_v2.json](models/grid_search/acc84.9_h64_2026_11_11_10_41/gs_acc84.4_h64_v2.json) |
+| **5** | 8 | 64 | 0.004 | 0.85 | 84.38 | 0.04274 | 27 | 21 | 99.35 | 14.97 | 41.1s | [gs_acc84.4_h64.json](models/grid_search/acc84.9_h64_2026_11_11_10_41/gs_acc84.4_h64.json) |
+| **6** | 4 | 56 | 0.006 | 0.85 | 84.13 | 0.04468 | 16 | 10 | 99.25 | 15.12 | 19.0s | [gs_acc84.1_h56.json](models/grid_search/acc84.9_h64_2026_11_11_10_41/gs_acc84.1_h56.json) |
+| **7** | 7 | 64 | 0.004 | 0.75 | 84.13 | 0.04482 | 26 | 20 | 99.14 | 15.01 | 37.8s | [gs_acc84.1_h64.json](models/grid_search/acc84.9_h64_2026_11_11_10_41/gs_acc84.1_h64.json) |
 | **8** | 1 | 56 | 0.004 | 0.75 | 83.88 | 0.04605 | 29 | 23 | 99.35 | 15.47 | 33.5s | (descartado < 84%) |
 | **9** | 3 | 56 | 0.006 | 0.75 | 83.63 | 0.04390 | 32 | 26 | 99.46 | 15.83 | 38.7s | (descartado < 84%) |
 | **10** | 5 | 56 | 0.008 | 0.75 | 83.63 | 0.04432 | 32 | 26 | 99.78 | 16.15 | 37.0s | (descartado < 84%) |

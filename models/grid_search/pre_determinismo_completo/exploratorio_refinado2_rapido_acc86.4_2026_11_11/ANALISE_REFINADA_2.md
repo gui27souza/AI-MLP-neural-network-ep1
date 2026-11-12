@@ -1,6 +1,6 @@
 # Relatorio Analitico: Grid Search Refinado 2 (A Via Rapida de Alto LR)
 
-Este documento consolida a analise tecnica e empirica das 18 combinacoes executadas no **Grid Search Refinado 2**, com dados brutos registrados em [summary.csv](file:///Users/guilhermesouza/Desktop/Fauldade-trabalhos/AI-MLP-neural-network-ep1/models/grid_search/acc86.4_h48_2026_11_11_10_32/summary.csv).
+Este documento consolida a analise tecnica e empirica das 18 combinacoes executadas no **Grid Search Refinado 2**, com dados brutos registrados em [summary.csv](models/grid_search/acc86.4_h48_2026_11_11_10_32/summary.csv).
 
 ---
 
@@ -25,14 +25,14 @@ Este documento consolida a analise tecnica e empirica das 18 combinacoes executa
 
 | Rank | Rodada | H | LR | Mom | Acc Val (%) | MSE Val | Epocas | Best Ep | Train Acc (%) | Gap (%) | Duracao | Checkpoint |
 |:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---|
-| **1** | **12** | **48** | **0.025** | **0.15** | **86.40** | **0.04139** | **25** | **19** | **99.46** | **13.06** | **25.1s** | [gs_acc86.4_h48.json](file:///Users/guilhermesouza/Desktop/Fauldade-trabalhos/AI-MLP-neural-network-ep1/models/grid_search/acc86.4_h48_2026_11_11_10_32/gs_acc86.4_h48.json) |
-| **2** | 10 | 48 | 0.020 | 0.15 | 85.89 | 0.04223 | 36 | 30 | 99.46 | 13.57 | 36.0s | [gs_acc85.9_h48_v3.json](file:///Users/guilhermesouza/Desktop/Fauldade-trabalhos/AI-MLP-neural-network-ep1/models/grid_search/acc86.4_h48_2026_11_11_10_32/gs_acc85.9_h48_v3.json) |
-| **3** | 11 | 48 | 0.025 | 0.05 | 85.89 | 0.04236 | 23 | 17 | 99.57 | 13.68 | 24.2s | [gs_acc85.9_h48_v4.json](file:///Users/guilhermesouza/Desktop/Fauldade-trabalhos/AI-MLP-neural-network-ep1/models/grid_search/acc86.4_h48_2026_11_11_10_32/gs_acc85.9_h48_v4.json) |
-| **4** | 7 | 48 | 0.015 | 0.05 | 85.89 | 0.04392 | 33 | 22 | 99.46 | 13.57 | 32.5s | [gs_acc85.9_h48.json](file:///Users/guilhermesouza/Desktop/Fauldade-trabalhos/AI-MLP-neural-network-ep1/models/grid_search/acc86.4_h48_2026_11_11_10_32/gs_acc85.9_h48.json) |
-| **5** | 9 | 48 | 0.020 | 0.05 | 85.89 | 0.04414 | 26 | 20 | 99.46 | 13.57 | 26.5s | [gs_acc85.9_h48_v2.json](file:///Users/guilhermesouza/Desktop/Fauldade-trabalhos/AI-MLP-neural-network-ep1/models/grid_search/acc86.4_h48_2026_11_11_10_32/gs_acc85.9_h48_v2.json) |
-| **6** | 8 | 48 | 0.015 | 0.15 | 84.89 | 0.04445 | 26 | 20 | 99.35 | 14.46 | 27.2s | [gs_acc84.9_h48.json](file:///Users/guilhermesouza/Desktop/Fauldade-trabalhos/AI-MLP-neural-network-ep1/models/grid_search/acc86.4_h48_2026_11_11_10_32/gs_acc84.9_h48.json) |
-| **7** | 14 | 56 | 0.015 | 0.15 | 84.38 | 0.04585 | 36 | 30 | 99.57 | 15.19 | 42.4s | [gs_acc84.4_h56.json](file:///Users/guilhermesouza/Desktop/Fauldade-trabalhos/AI-MLP-neural-network-ep1/models/grid_search/acc86.4_h48_2026_11_11_10_32/gs_acc84.4_h56.json) |
-| **8** | 16 | 56 | 0.020 | 0.15 | 84.13 | 0.04417 | 23 | 17 | 99.14 | 15.01 | 26.6s | [gs_acc84.1_h56.json](file:///Users/guilhermesouza/Desktop/Fauldade-trabalhos/AI-MLP-neural-network-ep1/models/grid_search/acc86.4_h48_2026_11_11_10_32/gs_acc84.1_h56.json) |
+| **1** | **12** | **48** | **0.025** | **0.15** | **86.40** | **0.04139** | **25** | **19** | **99.46** | **13.06** | **25.1s** | [gs_acc86.4_h48.json](models/grid_search/acc86.4_h48_2026_11_11_10_32/gs_acc86.4_h48.json) |
+| **2** | 10 | 48 | 0.020 | 0.15 | 85.89 | 0.04223 | 36 | 30 | 99.46 | 13.57 | 36.0s | [gs_acc85.9_h48_v3.json](models/grid_search/acc86.4_h48_2026_11_11_10_32/gs_acc85.9_h48_v3.json) |
+| **3** | 11 | 48 | 0.025 | 0.05 | 85.89 | 0.04236 | 23 | 17 | 99.57 | 13.68 | 24.2s | [gs_acc85.9_h48_v4.json](models/grid_search/acc86.4_h48_2026_11_11_10_32/gs_acc85.9_h48_v4.json) |
+| **4** | 7 | 48 | 0.015 | 0.05 | 85.89 | 0.04392 | 33 | 22 | 99.46 | 13.57 | 32.5s | [gs_acc85.9_h48.json](models/grid_search/acc86.4_h48_2026_11_11_10_32/gs_acc85.9_h48.json) |
+| **5** | 9 | 48 | 0.020 | 0.05 | 85.89 | 0.04414 | 26 | 20 | 99.46 | 13.57 | 26.5s | [gs_acc85.9_h48_v2.json](models/grid_search/acc86.4_h48_2026_11_11_10_32/gs_acc85.9_h48_v2.json) |
+| **6** | 8 | 48 | 0.015 | 0.15 | 84.89 | 0.04445 | 26 | 20 | 99.35 | 14.46 | 27.2s | [gs_acc84.9_h48.json](models/grid_search/acc86.4_h48_2026_11_11_10_32/gs_acc84.9_h48.json) |
+| **7** | 14 | 56 | 0.015 | 0.15 | 84.38 | 0.04585 | 36 | 30 | 99.57 | 15.19 | 42.4s | [gs_acc84.4_h56.json](models/grid_search/acc86.4_h48_2026_11_11_10_32/gs_acc84.4_h56.json) |
+| **8** | 16 | 56 | 0.020 | 0.15 | 84.13 | 0.04417 | 23 | 17 | 99.14 | 15.01 | 26.6s | [gs_acc84.1_h56.json](models/grid_search/acc86.4_h48_2026_11_11_10_32/gs_acc84.1_h56.json) |
 | **9** | 15 | 56 | 0.020 | 0.05 | 83.88 | 0.04510 | 23 | 17 | 99.46 | 15.58 | 27.0s | (descartado < 84%) |
 | **10** | 18 | 56 | 0.025 | 0.15 | 83.63 | 0.04334 | 25 | 19 | 99.57 | 15.94 | 30.0s | (descartado < 84%) |
 | **11** | 13 | 56 | 0.015 | 0.05 | 83.63 | 0.04493 | 36 | 30 | 99.57 | 15.94 | 41.4s | (descartado < 84%) |
@@ -60,7 +60,7 @@ Em tres baterias independentes de experimentos (Amplo com 192 rodadas, Refinado 
 - Hiperparametros: `H=48`, `LR=0.025`, `M=0.15`, `Pat=6`, `ValR=0.30`.
 - Desempenho: **86,40%** de acuracia e **0,04139** de MSE de validacao (o menor MSE de validacao entre todas as redes de 48 neuronios avaliadas ate aqui!).
 - Tempo de treino: Apenas **19 epocas** e **25,1 segundos** de convergencia.
-- Checkpoint gerado: [gs_acc86.4_h48.json](file:///Users/guilhermesouza/Desktop/Fauldade-trabalhos/AI-MLP-neural-network-ep1/models/grid_search/acc86.4_h48_2026_11_11_10_32/gs_acc86.4_h48.json).
+- Checkpoint gerado: [gs_acc86.4_h48.json](models/grid_search/acc86.4_h48_2026_11_11_10_32/gs_acc86.4_h48.json).
 - **Licao teorica:** Uma taxa de aprendizado relativamente alta (`0.025`) atua muito bem no treinamento de MLP quando balanceada com Momentum baixo (`0.15`), impedindo o efeito de oscilacao que causou colapsos no grid amplo (onde `LR=0.02` com `M=0.9` quebrou).
 
 ### 3.3 Comparativo LR vs Momentum no Regime Rapido

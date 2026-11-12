@@ -1,6 +1,6 @@
 # Relatorio Analitico e Teorico do Grid Search Amplo (Overnight)
 
-Este documento consolida a avaliacao analitica e estatistica das 192 combinacoes exploratorias de hiperparametros executadas na branch `model/grid-search-amplo`, com dados brutos registrados em [summary.csv](file:///Users/guilhermesouza/Desktop/Fauldade-trabalhos/AI-MLP-neural-network-ep1/models/grid_search/acc86.7_h48_2026_11_10_23_17/summary.csv) e orquestracao via [`GridSearchReporter`](file:///Users/guilhermesouza/Desktop/Fauldade-trabalhos/AI-MLP-neural-network-ep1/lab/grid_search/reporter.py#L8-L162).
+Este documento consolida a avaliacao analitica e estatistica das 192 combinacoes exploratorias de hiperparametros executadas na branch `model/grid-search-amplo`, com dados brutos registrados em [summary.csv](models/grid_search/acc86.7_h48_2026_11_10_23_17/summary.csv) e orquestracao via [`GridSearchReporter`](lab/grid_search/reporter.py#L8-L162).
 
 ---
 
@@ -27,17 +27,17 @@ Para manter o repositorio enxuto e reprodutivel sem redundancia de 192 arquivos 
 
 | Categoria Teorica | Rodada | Arquivo Checkpoint | Acc Val (%) | MSE Val | H | LR | Mom | Pat | ValR | Epocas |
 |:---|:---:|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| **1. Campeao Geral** | 136 | [gs_acc86.6_h48_v2.json](file:///Users/guilhermesouza/Desktop/Fauldade-trabalhos/AI-MLP-neural-network-ep1/models/grid_search/acc86.7_h48_2026_11_10_23_17/gs_acc86.6_h48_v2.json) | **86.65** | 0.04294 | 48 | 0.008 | 0.5 | 6 | 0.3 | 34 (pico: 28) |
-| **2. Vice-Campeao (Convergencia Lenta)** | 130 | [gs_acc86.6_h48.json](file:///Users/guilhermesouza/Desktop/Fauldade-trabalhos/AI-MLP-neural-network-ep1/models/grid_search/acc86.7_h48_2026_11_10_23_17/gs_acc86.6_h48.json) | 86.65 | 0.04526 | 48 | 0.003 | 0.5 | 6 | 0.3 | 69 (pico: 63) |
-| **3. LR Alto e Convergencia Ultra-Rapida** | 139 | [gs_acc86.4_h48.json](file:///Users/guilhermesouza/Desktop/Fauldade-trabalhos/AI-MLP-neural-network-ep1/models/grid_search/acc86.7_h48_2026_11_10_23_17/gs_acc86.4_h48.json) | 86.40 | 0.04371 | 48 | 0.020 | 0.1 | 3 | 0.3 | 21 (pico: 18) |
-| **4. Melhor Acuracia em Rede Larga** | 187 | [gs_acc86.1_h144.json](file:///Users/guilhermesouza/Desktop/Fauldade-trabalhos/AI-MLP-neural-network-ep1/models/grid_search/acc86.7_h48_2026_11_10_23_17/gs_acc86.1_h144.json) | 86.15 | 0.04359 | 144 | 0.020 | 0.1 | 3 | 0.3 | 26 (pico: 23) |
-| **5. Menor MSE Global de Todo o Grid** | 186 | [gs_acc85.1_h144.json](file:///Users/guilhermesouza/Desktop/Fauldade-trabalhos/AI-MLP-neural-network-ep1/models/grid_search/acc86.7_h48_2026_11_10_23_17/gs_acc85.1_h144.json) | 85.14 | **0.03908** | 144 | 0.008 | 0.9 | 6 | 0.3 | 28 (pico: 22) |
-| **6. Melhor Rede Media (H=96)** | 156 | [gs_acc85.1_h96.json](file:///Users/guilhermesouza/Desktop/Fauldade-trabalhos/AI-MLP-neural-network-ep1/models/grid_search/acc86.7_h48_2026_11_10_23_17/gs_acc85.1_h96.json) | 85.14 | 0.04319 | 96 | 0.003 | 0.9 | 6 | 0.3 | 24 (pico: 18) |
-| **7. Melhor Rede Compacta (H=16)** | 111 | [gs_acc77.8_h16.json](file:///Users/guilhermesouza/Desktop/Fauldade-trabalhos/AI-MLP-neural-network-ep1/models/grid_search/acc86.7_h48_2026_11_10_23_17/gs_acc77.8_h16.json) | 77.83 | 0.06700 | 16 | 0.008 | 0.5 | 3 | 0.3 | 31 (pico: 28) |
-| **8. Melhor H=48 no Split Val 0.2** | 44 | [gs_acc84.5_h48.json](file:///Users/guilhermesouza/Desktop/Fauldade-trabalhos/AI-MLP-neural-network-ep1/models/grid_search/acc86.7_h48_2026_11_10_23_17/gs_acc84.5_h48.json) | 84.53 | 0.04836 | 48 | 0.008 | 0.5 | 6 | 0.2 | 34 (pico: 28) |
-| **9. Melhor Global no Split Val 0.2** | 90 | [gs_acc84.5_h144.json](file:///Users/guilhermesouza/Desktop/Fauldade-trabalhos/AI-MLP-neural-network-ep1/models/grid_search/acc86.7_h48_2026_11_10_23_17/gs_acc84.5_h144.json) | 84.53 | 0.04369 | 144 | 0.008 | 0.9 | 6 | 0.2 | 18 (pico: 12) |
-| **10. Caso Falha 1 (Sub-excitacao)** | 1 | [gs_acc5.7_h16.json](file:///Users/guilhermesouza/Desktop/Fauldade-trabalhos/AI-MLP-neural-network-ep1/models/grid_search/acc86.7_h48_2026_11_10_23_17/gs_acc5.7_h16.json) | 5.66 | 0.15958 | 16 | 0.001 | 0.1 | 3 | 0.2 | 4 (Early Stop) |
-| **11. Caso Falha 2 (Divergencia/Explosao)** | 191 | [gs_acc11.1_h144.json](file:///Users/guilhermesouza/Desktop/Fauldade-trabalhos/AI-MLP-neural-network-ep1/models/grid_search/acc86.7_h48_2026_11_10_23_17/gs_acc11.1_h144.json) | 11.08 | 0.16607 | 144 | 0.020 | 0.9 | 3 | 0.3 | 5 (Divergencia) |
+| **1. Campeao Geral** | 136 | [gs_acc86.6_h48_v2.json](models/grid_search/acc86.7_h48_2026_11_10_23_17/gs_acc86.6_h48_v2.json) | **86.65** | 0.04294 | 48 | 0.008 | 0.5 | 6 | 0.3 | 34 (pico: 28) |
+| **2. Vice-Campeao (Convergencia Lenta)** | 130 | [gs_acc86.6_h48.json](models/grid_search/acc86.7_h48_2026_11_10_23_17/gs_acc86.6_h48.json) | 86.65 | 0.04526 | 48 | 0.003 | 0.5 | 6 | 0.3 | 69 (pico: 63) |
+| **3. LR Alto e Convergencia Ultra-Rapida** | 139 | [gs_acc86.4_h48.json](models/grid_search/acc86.7_h48_2026_11_10_23_17/gs_acc86.4_h48.json) | 86.40 | 0.04371 | 48 | 0.020 | 0.1 | 3 | 0.3 | 21 (pico: 18) |
+| **4. Melhor Acuracia em Rede Larga** | 187 | [gs_acc86.1_h144.json](models/grid_search/acc86.7_h48_2026_11_10_23_17/gs_acc86.1_h144.json) | 86.15 | 0.04359 | 144 | 0.020 | 0.1 | 3 | 0.3 | 26 (pico: 23) |
+| **5. Menor MSE Global de Todo o Grid** | 186 | [gs_acc85.1_h144.json](models/grid_search/acc86.7_h48_2026_11_10_23_17/gs_acc85.1_h144.json) | 85.14 | **0.03908** | 144 | 0.008 | 0.9 | 6 | 0.3 | 28 (pico: 22) |
+| **6. Melhor Rede Media (H=96)** | 156 | [gs_acc85.1_h96.json](models/grid_search/acc86.7_h48_2026_11_10_23_17/gs_acc85.1_h96.json) | 85.14 | 0.04319 | 96 | 0.003 | 0.9 | 6 | 0.3 | 24 (pico: 18) |
+| **7. Melhor Rede Compacta (H=16)** | 111 | [gs_acc77.8_h16.json](models/grid_search/acc86.7_h48_2026_11_10_23_17/gs_acc77.8_h16.json) | 77.83 | 0.06700 | 16 | 0.008 | 0.5 | 3 | 0.3 | 31 (pico: 28) |
+| **8. Melhor H=48 no Split Val 0.2** | 44 | [gs_acc84.5_h48.json](models/grid_search/acc86.7_h48_2026_11_10_23_17/gs_acc84.5_h48.json) | 84.53 | 0.04836 | 48 | 0.008 | 0.5 | 6 | 0.2 | 34 (pico: 28) |
+| **9. Melhor Global no Split Val 0.2** | 90 | [gs_acc84.5_h144.json](models/grid_search/acc86.7_h48_2026_11_10_23_17/gs_acc84.5_h144.json) | 84.53 | 0.04369 | 144 | 0.008 | 0.9 | 6 | 0.2 | 18 (pico: 12) |
+| **10. Caso Falha 1 (Sub-excitacao)** | 1 | [gs_acc5.7_h16.json](models/grid_search/acc86.7_h48_2026_11_10_23_17/gs_acc5.7_h16.json) | 5.66 | 0.15958 | 16 | 0.001 | 0.1 | 3 | 0.2 | 4 (Early Stop) |
+| **11. Caso Falha 2 (Divergencia/Explosao)** | 191 | [gs_acc11.1_h144.json](models/grid_search/acc86.7_h48_2026_11_10_23_17/gs_acc11.1_h144.json) | 11.08 | 0.16607 | 144 | 0.020 | 0.9 | 3 | 0.3 | 5 (Divergencia) |
 
 ---
 
