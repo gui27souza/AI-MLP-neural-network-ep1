@@ -15,8 +15,9 @@ AUGMENT_DATA ?= 0
 NOISE_RATE ?= 0.05
 AUGMENT_COPIES ?= 1
 MODEL ?=
+PYTHON ?= $(if $(wildcard venv/bin/python),venv/bin/python,python3)
 
-.PHONY: help main lab_logic_gates grid_search evaluate full_pipeline
+.PHONY: help main lab_logic_gates grid_search evaluate evaluate_grid full_pipeline full_grid_pipeline
 
 # ==============================================================================
 #  Execução
@@ -55,17 +56,43 @@ main:
 	AUGMENT_DATA=$(AUGMENT_DATA) \
 	NOISE_RATE=$(NOISE_RATE) \
 	AUGMENT_COPIES=$(AUGMENT_COPIES) \
-	python3 -m src.main
+	$(PYTHON) -m src.main
 
 lab_logic_gates:
 	@NUM_EPOCHS=$(NUM_EPOCHS) \
-	python3 -m lab.logic_gates
+	$(PYTHON) -m lab.logic_gates
 
 grid_search:
-	@python3 -m lab.grid_search.grid_search
+	@MAX_EPOCHS="$(MAX_EPOCHS)" \
+	TARGET_MSE="$(TARGET_MSE)" \
+	MIN_ACC_THRESHOLD="$(MIN_ACC_THRESHOLD)" \
+	SEED="$(SEED)" \
+	AUGMENT_DATA="$(AUGMENT_DATA)" \
+	NOISE_RATE="$(NOISE_RATE)" \
+	AUGMENT_COPIES="$(AUGMENT_COPIES)" \
+	VAL_RATIOS="$(VAL_RATIOS)" \
+	HIDDEN_NEURONS="$(HIDDEN_NEURONS)" \
+	LEARN_RATE="$(LEARN_RATE)" \
+	MOMENTUM="$(MOMENTUM)" \
+	PATIENCE="$(PATIENCE)" \
+	$(PYTHON) -m src.grid_search
 
 evaluate:
-	@MODEL="$(MODEL)" python3 -m lab.evaluator
+	@MODEL="$(MODEL)" $(PYTHON) -m lab.evaluator
+
+evaluate_grid:
+	@GRID_DIR="$(or $(GRID_DIR),$(DIR))" $(PYTHON) -m lab.grid_evaluator
+
+full_grid_pipeline: grid_search
+	@if [ -f "models/grid_search/.latest_grid.txt" ]; then \
+		LATEST_GRID=$$(cat models/grid_search/.latest_grid.txt); \
+		echo ""; \
+		echo "== Executando analise e geracao de graficos do Grid Search: $$LATEST_GRID =="; \
+		echo ""; \
+		$(PYTHON) -m lab.grid_evaluator "$$LATEST_GRID"; \
+	else \
+		echo "Aviso: Nenhum diretorio de grid search foi registrado."; \
+	fi
 
 full_pipeline: main
 	@if [ -f "models/.latest_model.txt" ]; then \
@@ -73,7 +100,7 @@ full_pipeline: main
 		echo ""; \
 		echo "== Iniciando avaliacao automatica do modelo gerado: $$LATEST_MODEL =="; \
 		echo ""; \
-		MODEL="$$LATEST_MODEL" python3 -m lab.evaluator; \
+		MODEL="$$LATEST_MODEL" $(PYTHON) -m lab.evaluator; \
 	else \
 		echo "Aviso: Nenhum modelo foi registrado para avaliacao."; \
 	fi

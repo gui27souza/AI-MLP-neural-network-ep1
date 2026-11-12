@@ -3,13 +3,14 @@
 from datetime import datetime
 from itertools import product
 
+from src.config import GridSearchConfig
 from src.dataset_loader import DatasetLoader
 from src.funcs import sigmoide_bipolar, deriv_sigmoide_bipolar
-from src.models import Layer, MLP
-from src.orchestrator import Orchestrator
-from src.mlp_persister import MLPPersister
+from src.grid_reporter import GridSearchReporter
 from src.initial_weights import get_initial_weights
-from lab.grid_search.reporter import GridSearchReporter
+from src.models import Layer, MLP
+from src.mlp_persister import MLPPersister
+from src.orchestrator import Orchestrator
 
 # =====
 
@@ -78,7 +79,6 @@ def pipeline(
     orch.print_results()
     print("")
 
-    # Acurácia de validação do melhor estado registrado
     best_val_acc_pct = orch.best_val_acc * 100
 
     saved_file: str | None = None
@@ -97,26 +97,11 @@ def pipeline(
 
 
 if __name__ == "__main__":
+    cfg = GridSearchConfig.from_env()
 
     # == Diretório da Execução ====
     INIT_TIME = datetime.now().strftime("%Y_%m_%d_%H_%M")
     OUTPUT_DIR = f"models/grid_search/{INIT_TIME}/"
-
-    # == Hiperparâmetros Fixos e Critérios ====
-    MAX_EPOCHS = 120
-    TARGET_MSE = 0.001
-    MIN_ACC_THRESHOLD = 84.0
-
-    # == Grade de Busca - Os 3 Modelos Ótimos ====
-    # Representam as 3 fronteiras de Pareto empíricas do problema
-    # 1. O Campeão - melhor geral           H=48, LR=0.010, M=0.55 (Acc 86.65%, MSE 0.04301)
-    # 2. A Via Rápida - menos épocas        H=48, LR=0.025, M=0.15 (Acc 86.40%, MSE 0.04139)
-    # 3. O Mínimo Quadrático - menor mse    H=64, LR=0.008, M=0.85 (Acc 84.40%, MSE 0.03942)
-    VAL_RATIOS = [0.30]
-    HIDDEN_NEURONS = [48, 64]
-    LEARN_RATE = [0.008, 0.010, 0.025]
-    MOMENTUM = [0.15, 0.55, 0.85]
-    PATIENCE = [6]
 
     reporter = GridSearchReporter(output_dir=OUTPUT_DIR)
 
@@ -125,11 +110,11 @@ if __name__ == "__main__":
 
     combinations = list(
         product(
-            VAL_RATIOS,
-            HIDDEN_NEURONS,
-            LEARN_RATE,
-            MOMENTUM,
-            PATIENCE,
+            cfg.val_ratios,
+            cfg.hidden_neurons,
+            cfg.learn_rates,
+            cfg.momentums,
+            cfg.patiences,
         )
     )
     total_combinations = len(combinations)
@@ -139,6 +124,7 @@ if __name__ == "__main__":
             dataset_cache[val_ratio] = DatasetLoader.load_caracteres_completo(val_ratio=val_ratio)
 
         train_x, train_y, test_x, test_y, _ = dataset_cache[val_ratio]
+        train_x, train_y = cfg.augment.apply(train_x, train_y, seed=cfg.seed if cfg.seed is not None else 42)
 
         print(
             f"\n[RODADA {current}/{total_combinations}] "
@@ -154,14 +140,15 @@ if __name__ == "__main__":
             train_y=train_y,
             test_x=test_x,
             test_y=test_y,
-            epochs=MAX_EPOCHS,
-            target_mse=TARGET_MSE,
+            epochs=cfg.max_epochs,
+            target_mse=cfg.target_mse,
             hidden_neurons=hidden,
             learn_rate=lr,
             momentum=momentum,
             patience=patience,
             output_dir=OUTPUT_DIR,
-            min_acc_threshold=MIN_ACC_THRESHOLD,
+            min_acc_threshold=cfg.min_acc_threshold,
+            seed=cfg.seed,
         )
 
         reporter.record_trial(

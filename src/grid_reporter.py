@@ -159,4 +159,14 @@ class GridSearchReporter:
         os.rename(clean_dir, new_path)
         self.output_dir = new_path
         print(f"\nDiretorio renomeado com a melhor marca: {new_path}")
+
+        # Salva o checkpoint final e registra o caminho gerado para automações
+        # Necessário para que o make full_grid_pipeline funcione
+        # devidamente de forma automatizada
+        try:
+            with open("models/grid_search/.latest_grid.txt", "w", encoding="utf-8") as f:
+                f.write(new_path.strip())
+        except Exception:
+            pass
+
         return new_path
