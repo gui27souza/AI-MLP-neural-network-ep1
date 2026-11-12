@@ -2,6 +2,7 @@
 
 import os
 
+from src.data_augmentation import augment_bipolar_dataset
 from src.dataset_loader import DatasetLoader
 from src.funcs import sigmoide_bipolar, deriv_sigmoide_bipolar
 from src.initial_weights import get_initial_weights
@@ -30,6 +31,10 @@ VAL_RATIO = float(os.environ["VAL_RATIO"])
 _seed_env = os.getenv("SEED", "42")
 SEED = int(_seed_env) if _seed_env.lower() not in ("none", "") else None
 
+AUGMENT_DATA = os.getenv("AUGMENT_DATA", "0").lower() in ("1", "true", "yes")
+NOISE_RATE = float(os.getenv("NOISE_RATE", "0.05"))
+AUGMENT_COPIES = int(os.getenv("AUGMENT_COPIES", "1"))
+
 # =====
 
 
@@ -37,6 +42,15 @@ if __name__ == "__main__":
 
     # == Carregamento dos dados ====
     train_x, train_y, test_x, test_y, _ = DatasetLoader.load_caracteres_completo(val_ratio=VAL_RATIO)
+
+    if AUGMENT_DATA:
+        train_x, train_y = augment_bipolar_dataset(
+            train_x,
+            train_y,
+            noise_rate=NOISE_RATE,
+            copies_per_sample=AUGMENT_COPIES,
+            seed=SEED if SEED is not None else 42,
+        )
 
     num_inputs = len(train_x[0])
     num_outputs = len(train_y[0])

@@ -11,6 +11,9 @@ PATIENCE ?=
 PRINT_INTERVAL ?= 2
 VAL_RATIO ?= 0.1
 SEED ?= 42
+AUGMENT_DATA ?= 0
+NOISE_RATE ?= 0.05
+AUGMENT_COPIES ?= 1
 MODEL ?=
 
 .PHONY: help main lab_logic_gates grid_search evaluate full_pipeline
@@ -49,6 +52,9 @@ main:
 	PRINT_INTERVAL=$(PRINT_INTERVAL) \
 	VAL_RATIO=$(VAL_RATIO) \
 	SEED=$(SEED) \
+	AUGMENT_DATA=$(AUGMENT_DATA) \
+	NOISE_RATE=$(NOISE_RATE) \
+	AUGMENT_COPIES=$(AUGMENT_COPIES) \
 	python3 -m src.main
 
 lab_logic_gates:
