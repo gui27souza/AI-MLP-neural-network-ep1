@@ -66,6 +66,10 @@ make main NUM_EPOCHS=40 VAL_RATIO=0.2
 | `TARGET_MSE` | *(vazio)* | Erro Quadrático Médio alvo para parada antecipada |
 | `PRINT_INTERVAL` | `2` | Intervalo de épocas para exibição do progresso no terminal |
 | `VAL_RATIO` | `0.1` | Proporção do dataset reservada para validação/teste (ex: 0.1 = 10%, 0.2 = 20%) |
+| `SEED` | `42` | Semente pseudoaleatória para inicialização de pesos e embaralhamento |
+| `AUGMENT_DATA` | `0` | Ativa Data Augmentation Bipolar no treino (`1` para ativar) |
+| `NOISE_RATE` | `0.05` | Taxa de inversão aleatória de pixels no treino (ex: 0.05 = ~5%) |
+| `AUGMENT_COPIES` | `1` | Quantidade de cópias ruidosas geradas por amostra original de treino |
 
 ---
 
@@ -79,7 +83,23 @@ make lab_logic_gates NUM_EPOCHS=500
 
 ---
 
-### 3. Busca em Grade (Grid Search)
+### 3. Pipeline Completo (Treino + Avaliação Oficial)
+
+Para executar o treinamento e imediatamente gerar todos os entregáveis oficiais (relatório textual, matriz de confusão, curvas de aprendizado e arquivos formatados do EP1 em `results/`):
+
+```bash
+make full_pipeline NUM_EPOCHS=120 HIDDEN_NEURONS=48 LEARN_RATE=0.01 MOMENTUM=0.55 PATIENCE=6 VAL_RATIO=0.3
+```
+
+Para treinar com aumento de dados bipolar (5% de inversão de ruído):
+
+```bash
+make full_pipeline NUM_EPOCHS=120 HIDDEN_NEURONS=48 LEARN_RATE=0.01 MOMENTUM=0.50 PATIENCE=6 VAL_RATIO=0.3 AUGMENT_DATA=1 NOISE_RATE=0.05
+```
+
+---
+
+### 4. Busca em Grade (Grid Search)
 
 Para executar uma busca automatizada sobre combinações de hiperparâmetros com relatório consolidado em CSV e ranking impresso no terminal:
 
