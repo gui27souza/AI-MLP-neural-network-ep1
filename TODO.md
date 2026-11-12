@@ -1,7 +1,6 @@
 ## TO-DO para entrega
 
-- Aumento de Dados com Ruído (Data Augmentation Bipolar)
-    - O que faz: Cria cópias ruidosas no treino invertendo aleatoriamente pixels (-1 ↔ +1) para a rede ficar mais robusta.
+> Tudo ok.
 
 ## Refinamentos
 
