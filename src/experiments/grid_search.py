@@ -125,68 +125,74 @@ if __name__ == "__main__":
     )
     total_combinations = len(combinations)
 
-    for current, (val_ratio, hidden, lr, momentum, patience, noise_rate) in enumerate(combinations, start=1):
-        if val_ratio not in dataset_cache:
-            dataset_cache[val_ratio] = DatasetLoader.load_caracteres_completo(val_ratio=val_ratio)
+    try:
+        for current, (val_ratio, hidden, lr, momentum, patience, noise_rate) in enumerate(combinations, start=1):
+            if val_ratio not in dataset_cache:
+                dataset_cache[val_ratio] = DatasetLoader.load_caracteres_completo(val_ratio=val_ratio)
 
-        raw_train_x, raw_train_y, test_x, test_y, _ = dataset_cache[val_ratio]
+            raw_train_x, raw_train_y, test_x, test_y, _ = dataset_cache[val_ratio]
 
-        cache_key = (val_ratio, noise_rate)
-        if cache_key not in augmented_cache:
-            if noise_rate > 0.0:
-                aug_x, aug_y = augment_bipolar_dataset(
-                    raw_train_x,
-                    raw_train_y,
-                    noise_rate=noise_rate,
-                    copies_per_sample=cfg.augment_copies,
-                    seed=cfg.seed if cfg.seed is not None else 42,
-                )
-                augmented_cache[cache_key] = (aug_x, aug_y)
-            else:
-                augmented_cache[cache_key] = (raw_train_x, raw_train_y)
+            cache_key = (val_ratio, noise_rate)
+            if cache_key not in augmented_cache:
+                if noise_rate > 0.0:
+                    aug_x, aug_y = augment_bipolar_dataset(
+                        raw_train_x,
+                        raw_train_y,
+                        noise_rate=noise_rate,
+                        copies_per_sample=cfg.augment_copies,
+                        seed=cfg.seed if cfg.seed is not None else 42,
+                    )
+                    augmented_cache[cache_key] = (aug_x, aug_y)
+                else:
+                    augmented_cache[cache_key] = (raw_train_x, raw_train_y)
 
-        train_x, train_y = augmented_cache[cache_key]
+            train_x, train_y = augmented_cache[cache_key]
 
-        print(
-            f"\n[RODADA {current}/{total_combinations}] "
-            f"Ratio={val_ratio} | "
-            f"H={hidden} | "
-            f"LR={lr} | "
-            f"M={momentum} | "
-            f"P={patience} | "
-            f"Noise={noise_rate}"
-        )
+            print(
+                f"\n[RODADA {current}/{total_combinations}] "
+                f"Ratio={val_ratio} | "
+                f"H={hidden} | "
+                f"LR={lr} | "
+                f"M={momentum} | "
+                f"P={patience} | "
+                f"Noise={noise_rate}"
+            )
 
-        orch, saved_file = pipeline(
-            train_x=train_x,
-            train_y=train_y,
-            test_x=test_x,
-            test_y=test_y,
-            epochs=cfg.max_epochs,
-            target_mse=cfg.target_mse,
-            hidden_neurons=hidden,
-            learn_rate=lr,
-            momentum=momentum,
-            patience=patience,
-            output_dir=OUTPUT_DIR,
-            min_acc_threshold=cfg.min_acc_threshold,
-            seed=cfg.seed,
-            noise_rate=noise_rate,
-        )
+            orch, saved_file = pipeline(
+                train_x=train_x,
+                train_y=train_y,
+                test_x=test_x,
+                test_y=test_y,
+                epochs=cfg.max_epochs,
+                target_mse=cfg.target_mse,
+                hidden_neurons=hidden,
+                learn_rate=lr,
+                momentum=momentum,
+                patience=patience,
+                output_dir=OUTPUT_DIR,
+                min_acc_threshold=cfg.min_acc_threshold,
+                seed=cfg.seed,
+                noise_rate=noise_rate,
+            )
 
-        reporter.record_trial(
-            round_num=current,
-            hidden_neurons=hidden,
-            learn_rate=lr,
-            momentum=momentum,
-            patience=patience,
-            orch=orch,
-            val_ratio=val_ratio,
-            noise_rate=noise_rate,
-            checkpoint_path=saved_file,
-        )
-
-    # == Exportar Resumo e Exibir Ranking ====
-    reporter.save_csv()
-    reporter.print_ranking(top_k=10)
-    reporter.finalize_directory_name()
+            reporter.record_trial(
+                round_num=current,
+                hidden_neurons=hidden,
+                learn_rate=lr,
+                momentum=momentum,
+                patience=patience,
+                orch=orch,
+                val_ratio=val_ratio,
+                noise_rate=noise_rate,
+                checkpoint_path=saved_file,
+            )
+    except KeyboardInterrupt:
+        print("\n" + "!" * 80)
+        print("  Interrupcao manual detectada (Ctrl+C). Finalizando de forma limpa...")
+        print("!" * 80)
+    finally:
+        # == Exportar Resumo e Exibir Ranking ====
+        if reporter.records:
+            reporter.save_csv()
+            reporter.print_ranking(top_k=10)
+            reporter.finalize_directory_name()

@@ -60,9 +60,10 @@ class GridSearchReporter:
         }
 
         self.records.append(record)
+        self.save_csv(verbose=False)
         return record
 
-    def save_csv(self, filename: str = "summary.csv") -> str:
+    def save_csv(self, filename: str = "summary.csv", verbose: bool = True) -> str:
         """Salva resumo consolidado em arquivo CSV."""
         if not self.records:
             return ""
@@ -75,7 +76,8 @@ class GridSearchReporter:
             writer.writeheader()
             writer.writerows(self.records)
 
-        print(f"\nResumo consolidado salvo em: {csv_path}")
+        if verbose:
+            print(f"\nResumo consolidado salvo em: {csv_path}")
         return csv_path
 
     def print_ranking(self, top_k: int = 10) -> None:
