@@ -8,13 +8,13 @@
 #   explorando contrastes teóricos em topologia, gradiente, momento e ruído.
 #
 # Dimensões da Grade:
-#   - Val Ratio        : 0.30 (1 valor)
+#   - Val Ratios       : 0.15, 0.30, 0.45 (3 valores: validação enxuta -> holdout amplo)
 #   - Hidden Neurons   : 24, 48, 96, 144 (4 valores: subcapacidade -> sobreparametrização)
-#   - Learn Rate (eta) : 0.002, 0.008, 0.020, 0.040, 0.070 (5 valores: rastejante -> agressivo)
+#   - Learn Rate (eta) : 0.002, 0.020, 0.07, 0.1 (4 valores: rastejante -> agressivo)
 #   - Momentum (alpha) : 0.0, 0.40, 0.70, 0.90 (4 valores: SGD puro -> inércia pesada)
-#   - Patience         : 8, 14 (2 valores: parada intermediária -> respiro estendido)
+#   - Patience         : 14 (1 valor: respiro estendido fixo)
 #   - Noise Rates      : 0.0, 0.03, 0.08 (3 valores: limpo -> ruído leve -> ruído estresse)
-#   Total              : 1 * 4 * 5 * 4 * 2 * 3 = 480 modelos
+#   Total              : 3 * 4 * 4 * 4 * 1 * 3 = 576 modelos
 #
 # ==============================================================================================
 
@@ -31,15 +31,15 @@ export NOISE_RATES="0.0,0.03,0.08"
 export AUGMENT_COPIES=1
 
 # == Espaço de Hiperparâmetros (Combinatória Cartesiana) ====
-export VAL_RATIOS="0.30"
+export VAL_RATIOS="0.15,0.30,0.45"
 export HIDDEN_NEURONS="24,48,96,144"
-export LEARN_RATE="0.002,0.008,0.020,0.040,0.070"
+export LEARN_RATE="0.002,0.020,0.07,0.1"
 export MOMENTUM="0.0,0.40,0.70,0.90"
-export PATIENCE="8,14"
+export PATIENCE="14"
 
 # == Executa a Grade e Gera Relatórios + Gráficos Automaticamente ====
 echo "=============================================================================="
-echo "  Iniciando Mega Grid Search Amplo (480 combinacoes)"
+echo "  Iniciando Mega Grid Search Amplo (576 combinacoes)"
 echo "  Data/Hora: $(date)"
 echo "  Semente: ${SEED} | Epocas Max: ${MAX_EPOCHS} | Target MSE: ${TARGET_MSE}"
 echo "=============================================================================="
