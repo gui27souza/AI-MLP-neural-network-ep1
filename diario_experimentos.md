@@ -44,3 +44,5 @@
   - Análise com o melhor modelo (até agora) variando as taxas de proporção de treinamento / validação
   - Nenhuma surpresa, 0.3 para validação seguiu campeão
 
+- Momentum x Learn Rate
+  - Análise de valores diferentes de momentum e learn rate no modelo campeão (até agora)
