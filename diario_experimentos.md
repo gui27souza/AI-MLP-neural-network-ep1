@@ -61,3 +61,21 @@
   > apenas em memória acionando o método que só seria acionado ao fim do grid-search completo
   - No quesitos de resultados sobre o melhor modelo, sem novidades
   - No quesito de estudo de relacionamento entre os hiperparâmetros, ficou sensacional
+
+- **Fase 2 — Pipeline Oficial (130 amostras fixas de teste + Early Stopping por MSE):**
+  - Hardware: Intel Core i5-14600KF (12+8 @ 5.30 GHz) | 32GB DDR5 6000MT/s.
+  - Divisão: 1.196 amostras de desenvolvimento (962 treino / 234 val com `VAL_RATIO=0.20`) e últimas 130 amostras (5 alfabetos, Fontes #47 a #51) isoladas para teste fixo.
+  - **1. Grid Search Oficial (`results/1_grid_hiperparametros_oficiais` - 27 modelos):**
+    - Campeão Teste: `H=64, LR=0.008, M=0.55` -> **84.62%** no teste (época 20).
+    - Campeão H=48 (Momentum): `H=48, LR=0.008, M=0.85` -> **83.85%** teste | **86.32%** val (menor MSE val `0.03787`).
+    - Campeão GD Puro: `H=48, LR=0.015, M=0.0` -> **83.85%** teste | **86.75%** val (65 épocas / 57.4s vs ~30 épocas com momentum).
+    - Acurácia por fonte nas 130 amostras de teste: Fonte #47 (**96.15%**), Fonte #48 (**69.23%**, estilizada), Fonte #49 (**96.15%**), Fonte #50 (**84.62%**), Fonte #51 (**76.92%**, estilizada).
+  - **2. Proporção de Validação (`results/2_grid_proporcao_validacao` - 12 modelos):**
+    - `0.20` teve o melhor equilíbrio (**83.85%** teste / **86.64%** val médio), superando `0.10` (val pequena, **81.54%**) e `0.30` (perde amostras de treino, **82.31%** teste).
+  - **3. Ruído no Treino (`results/3_grid_robustez_ruido` - 8 modelos):**
+    - Reduziu o gap de overfit (`Treino - Val`) de `+13.10%` (limpo) para `+7.96%` (`30%` de ruído), segurando **81.54%** no teste até `15%` de ruído.
+  - **4. Comparativo Controlado `H=48, LR=0.025` (`results/4_comparativo_slides_h48_lr025`):**
+    - Com Momentum + Early Stopping: **82.31%** teste (`MSE 0.04847`, 29 épocas).
+    - GD Puro (`M=0.0`): **81.54%** teste (`MSE 0.04930`, 42 épocas).
+    - Sem Early Stopping (60 épocas): decorou o treino (**99.08%**), caiu para **81.54%** no teste (`MSE 0.04928`).
+    - Sem Estratificação (`STRATIFIED=false`): despencou para **75.38%** no teste (`-6.93 pp`, `MSE 0.06270`).
