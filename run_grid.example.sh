@@ -14,11 +14,11 @@ export NOISE_RATES="0.0"
 export AUGMENT_COPIES=1
 
 # Grade de Busca (valores separados por vírgula)
-export VAL_RATIOS="0.30"
+export VAL_RATIOS="0.20,0.30"
 export HIDDEN_NEURONS="16,48,64"
-export LEARN_RATE="0.008,0.010,0.025"
-export MOMENTUM="0.15,0.55,0.85"
-export PATIENCE="6"
+export LEARN_RATE="0.005,0.015,0.025"
+export MOMENTUM="0.0,0.55,0.85"
+export PATIENCE="10"
 
 # Executa o grid search e gera automaticamente o relatório e gráficos
 make full_grid_pipeline

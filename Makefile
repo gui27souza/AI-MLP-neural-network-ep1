@@ -52,6 +52,7 @@ main:
 	SEED="$(SEED)" \
 	NOISE_RATE="$(NOISE_RATE)" \
 	AUGMENT_COPIES="$(AUGMENT_COPIES)" \
+	STRATIFIED="$(STRATIFIED)" \
 	$(PYTHON) -m src.main
 
 lab_logic_gates:

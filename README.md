@@ -1,6 +1,6 @@
 # AI-MLP-neural-network-ep1
 
-Implementação de uma Rede Neural Multicamadas (MLP - Multi-Layer Perceptron) baseada no algoritmo Backpropagation de Laurene Fausett, com suporte a Momentum, Early Stopping e Erro Alvo (Target MSE) para reconhecimento e classificação de caracteres.
+Implementação de uma Rede Neural Multicamadas (MLP - Multi-Layer Perceptron) baseada no algoritmo Backpropagation com Gradiente Descendente de Laurene Fausett, com suporte a Momentum, Parada Antecipada (Early Stopping guiado por MSE) e Erro Alvo (Target MSE) para reconhecimento e classificação de caracteres (`CARACTERES COMPLETO`).
 
 ---
 
@@ -23,59 +23,27 @@ pip install -r requirements.txt
 
 ---
 
-## Como Executar
+## Divisão Oficial do Conjunto de Dados (`CARACTERES COMPLETO`)
 
-O projeto utiliza um `Makefile` para gerenciar a execução e configuração dos hiperparâmetros.
-
-### 1. Treinamento Principal (Reconhecimento de Caracteres)
-
-Executa o treinamento com a configuração padrão:
-
-```bash
-make main
-```
-
-#### Customizando Hiperparâmetros via Linha de Comando:
-
-Você pode sobrescrever qualquer variável diretamente na chamada do make:
-
-```bash
-# Exemplo 1: Treinar com 50 épocas, 64 neurônios e momentum 0.7
-make main NUM_EPOCHS=50 HIDDEN_NEURONS=64 MOMENTUM=0.7
-
-# Exemplo 2: Usar Early Stopping com paciência de 5 épocas
-make main NUM_EPOCHS=40 PATIENCE=5
-
-# Exemplo 3: Parar automaticamente quando o MSE atingir 0.01
-make main NUM_EPOCHS=30 TARGET_MSE=0.01
-
-# Exemplo 4: Alterar a taxa de aprendizado
-make main NUM_EPOCHS=30 LEARN_RATE=0.01
-
-# Exemplo 5: Alterar a proporção do conjunto de validação para 20%
-make main NUM_EPOCHS=40 VAL_RATIO=0.2
-```
-
-| Parâmetro | Padrão | Descrição |
-| :--- | :--- | :--- |
-| `NUM_EPOCHS` | `20` | Quantidade máxima de épocas de treinamento |
-| `LEARN_RATE` | `0.015` | Taxa de aprendizado da rede |
-| `HIDDEN_NEURONS` | `32` | Quantidade de neurônios na camada escondida |
-| `MOMENTUM` | `0.5` | Fator de momentum para aceleração do gradiente |
-| `PATIENCE` | *(vazio)* | Número de épocas sem melhora na validação para interromper o treino |
-| `TARGET_MSE` | *(vazio)* | Erro Quadrático Médio alvo para parada antecipada |
-| `PRINT_INTERVAL` | `2` | Intervalo de épocas para exibição do progresso no terminal |
-| `VAL_RATIO` | `0.1` | Proporção do dataset reservada para validação/teste (ex: 0.1 = 10%, 0.2 = 20%) |
-| `SEED` | `42` | Semente pseudoaleatória para inicialização de pesos e embaralhamento |
-| `NOISE_RATE` | `0.0` | Taxa de inversão aleatória de pixels no treino (ex: 0.05 = ~5%; 0.0 = limpo) |
-| `NOISE_RATES` | `0.0` | *(Grid Search)* Lista de taxas de ruído para exploração em grade (ex: `0.0,0.03`) |
-| `AUGMENT_COPIES` | `1` | Quantidade de cópias ruidosas geradas por amostra original de treino |
+O dataset possui **1.326 caracteres** ($51$ alfabetos completos de $26$ letras `'A'..'Z'`, matrizes $10 \times 12 = 120$ pixels bipolares em $\{-1, +1\}$):
+1. **Conjunto de Teste (Fixo):** Os **últimos 130 exemplos** (índices `1196..1325`, equivalentes aos últimos 5 alfabetos completos) são isolados exclusivamente para avaliação final de teste e geração da Matriz de Confusão.
+2. **Base de Desenvolvimento (Primeiros 1.196 exemplos = 46 alfabetos):** Particionada entre **Treinamento** e **Validação** segundo `VAL_RATIO` (alinhada em múltiplos de 26 letras com `STRATIFIED=true` por padrão, ou sorteada sem estratificação com `STRATIFIED=false`). Quando `VAL_RATIO=0.0`, todas as 1.196 amostras são usadas no treinamento (treinamento completo sem parada antecipada).
 
 ---
 
-### 2. Laboratório de Portas Lógicas
+## Como Executar
 
-Para testar a convergência do algoritmo em problemas lineares e não-lineares simples (AND, OR, XOR):
+O projeto utiliza um `Makefile` e scripts `.sh` (`./run.sh` e `./run_grid.sh`) para gerenciar a execução e configuração dos hiperparâmetros.
+
+### 1. Teste de Mesa Oficial e Laboratório de Portas Lógicas
+
+Para validar a corretude matemática passo a passo contra o documento oficial da disciplina (`docs/exemplo-numerico-MLP.pdf`):
+
+```bash
+make lab_mesa_test
+```
+
+Para testar a convergência do algoritmo em problemas lineares e não-lineares clássicos (`AND`, `OR`, `XOR`):
 
 ```bash
 make lab_logic_gates NUM_EPOCHS=500
@@ -83,43 +51,66 @@ make lab_logic_gates NUM_EPOCHS=500
 
 ---
 
-### 3. Pipeline Completo (Treino + Avaliação Oficial)
+### 2. Treinamento Principal e Pipeline Completo (Treino + Avaliação Oficial)
 
 Para executar o treinamento e imediatamente gerar todos os entregáveis oficiais (relatório textual, matriz de confusão, curvas de aprendizado e arquivos formatados do EP1 em `results/`):
 
 ```bash
-make full_pipeline NUM_EPOCHS=120 HIDDEN_NEURONS=48 LEARN_RATE=0.01 MOMENTUM=0.55 PATIENCE=6 VAL_RATIO=0.3
+./run.sh
+# ou via Makefile:
+make full_pipeline NUM_EPOCHS=120 HIDDEN_NEURONS=48 LEARN_RATE=0.025 MOMENTUM=0.55 PATIENCE=10 VAL_RATIO=0.2
 ```
 
-Para treinar com aumento de dados bipolar (5% de inversão de ruído):
+#### Customizando Hiperparâmetros via Linha de Comando:
 
 ```bash
-make full_pipeline NUM_EPOCHS=120 HIDDEN_NEURONS=48 LEARN_RATE=0.01 MOMENTUM=0.50 PATIENCE=6 VAL_RATIO=0.3 NOISE_RATE=0.05
+# Exemplo 1: Treinamento com Gradiente Descendente Puro (sem Momentum) e Parada Antecipada
+make full_pipeline NUM_EPOCHS=120 HIDDEN_NEURONS=48 LEARN_RATE=0.025 MOMENTUM=0.0 PATIENCE=10 VAL_RATIO=0.2
+
+# Exemplo 2: Treinamento Completo SEM Parada Antecipada (1.196 treino / 130 teste)
+make full_pipeline NUM_EPOCHS=60 HIDDEN_NEURONS=48 LEARN_RATE=0.025 MOMENTUM=0.55 VAL_RATIO=0.0
+
+# Exemplo 3: Parada Antecipada com amostragem aleatória sem estratificação (Slide 11)
+make full_pipeline NUM_EPOCHS=120 HIDDEN_NEURONS=48 LEARN_RATE=0.025 MOMENTUM=0.55 PATIENCE=10 VAL_RATIO=0.2 STRATIFIED=false
+
+# Exemplo 4: Treinamento com Data Augmentation Bipolar (5% de inversão de pixels)
+make full_pipeline NUM_EPOCHS=120 HIDDEN_NEURONS=48 LEARN_RATE=0.025 MOMENTUM=0.55 PATIENCE=10 VAL_RATIO=0.2 NOISE_RATE=0.05
+```
+
+| Parâmetro | Descrição |
+| :--- | :--- |
+| `NUM_EPOCHS` | Quantidade máxima de épocas de treinamento |
+| `LEARN_RATE` | Taxa de aprendizado da rede ($\alpha$ / $\eta$) |
+| `HIDDEN_NEURONS` | Quantidade de neurônios na camada escondida ($p$) |
+| `MOMENTUM` | Fator de momentum ($\mu$) para aceleração do gradiente (`0.0` = GD puro) |
+| `PATIENCE` | Número de épocas sem redução no **MSE de validação** para interromper o treino |
+| `TARGET_MSE` | Erro Quadrático Médio de treino alvo para parada antecipada |
+| `PRINT_INTERVAL` | Intervalo de épocas para exibição do progresso no terminal |
+| `VAL_RATIO` | Proporção das 1.196 amostras de desenvolvimento reservada para validação (`0.0` desativa validação) |
+| `STRATIFIED` | `true` (padrão) fatia em blocos completos de alfabeto (26 letras); `false` amostra aleatoriamente sem estratificação |
+| `SEED` | Semente pseudoaleatória para inicialização de pesos e embaralhamento (`42`) |
+| `NOISE_RATE` | Taxa de inversão aleatória de pixels no treino (`0.0` = limpo) |
+| `AUGMENT_COPIES` | Quantidade de cópias ruidosas geradas por amostra original de treino |
+
+---
+
+### 3. Busca em Grade (Grid Search + Análise Gráfica)
+
+Para executar uma busca automatizada sobre combinações de hiperparâmetros com relatório consolidado (`summary.csv`, `ANALISE_GRID_SEARCH.md` e gráficos comparativos):
+
+```bash
+./run_grid.sh
+# ou via Makefile:
+make full_grid_pipeline MAX_EPOCHS=120 VAL_RATIOS=0.2,0.3 HIDDEN_NEURONS=16,48,64 LEARN_RATE=0.005,0.015,0.025 MOMENTUM=0.0,0.55,0.85 PATIENCE=10
 ```
 
 ---
 
-### 4. Busca em Grade (Grid Search)
+## Modelos, Checkpoints e Entregáveis Oficiais
 
-Para executar uma busca automatizada sobre combinações de hiperparâmetros com relatório consolidado em CSV e ranking impresso no terminal:
-
-```bash
-make grid_search
-```
-
-Os resultados são salvos em `models/grid_search/<TIMESTAMP>/summary.csv` juntamente com os arquivos JSON de cada modelo testado na rodada.
-
----
-
-## Modelos e Checkpoints
-
-Ao final do treinamento (ou em caso de interrupção com `Ctrl+C`), a rede restaura os melhores pesos observados na validação (priorizando a maior acurácia de validação e usando menor MSE como critério de desempate) e salva o modelo na pasta `models/` no formato JSON:
-
-```text
-models/mlp_caracteres_acc78.5_h32.json
-```
-
-O arquivo contém:
-- Arquitetura e hiperparâmetros utilizados
-- Pesos e biases de todas as camadas
-- Histórico e métricas de treino e validação (MSE, acurácia e época de melhor resultado)
+Ao final do treinamento, a rede restaura os pesos da época de **menor MSE de validação**, avalia os **130 exemplos fixos de teste**, salva o checkpoint JSON em `models/` e exporta em `results/<MODELO>/saidas_oficiais/`:
+- `hiperparametros.txt`: Arquitetura, inicialização, divisão Treino/Validação/Teste e métricas alcançadas.
+- `pesos_iniciais.csv` (`+ _V.csv, _W.csv`): Matrizes iniciais no padrão de Fausett (coluna 0 = bias).
+- `pesos_finais.csv` (`+ _V.csv, _W.csv`): Matrizes finais treinadas no padrão de Fausett.
+- `historico_erro_treinamento.csv`: Evolução de MSE e acurácia por época.
+- `saidas_teste_continuas.csv` e `saidas_teste_discretas.csv`: Saídas produzidas para cada um dos 130 dados de teste.
