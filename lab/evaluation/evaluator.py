@@ -62,12 +62,14 @@ class MLPEvaluator:
 
     def get_val_ratio(self) -> float:
         ds_info = self.metrics.get("dataset_info", {})
+        if "val_ratio" in ds_info and ds_info["val_ratio"] is not None:
+            return float(ds_info["val_ratio"])
         train_samples = ds_info.get("train_samples", 0)
         val_samples = ds_info.get("val_samples", 0)
         total = train_samples + val_samples
         if total > 0 and val_samples > 0:
             return round(val_samples / total, 2)
-        return 0.3
+        return 0.2
 
     def evaluate_test_set(self, val_ratio: float | None = None) -> dict:
         ratio = val_ratio if val_ratio is not None else self.get_val_ratio()
