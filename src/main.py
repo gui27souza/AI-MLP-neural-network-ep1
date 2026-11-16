@@ -14,9 +14,17 @@ from src.training.orchestrator import Orchestrator
 if __name__ == "__main__":
     cfg = TrainConfig.from_env()
 
-    # == Carregamento e aumento dos dados ====
-    train_x, train_y, test_x, test_y, _ = DatasetLoader.load_caracteres_completo(val_ratio=cfg.val_ratio)
-    train_x, train_y = cfg.augment.apply(train_x, train_y, seed=cfg.seed if cfg.seed is not None else 42)
+    # == Carregamento formal: Treino, Validação e Teste (130 fixos) ====
+    train_x, train_y, val_x, val_y, test_x, test_y, _ = (
+        DatasetLoader.load_caracteres_completo(
+            val_ratio=cfg.val_ratio,
+            stratified=cfg.stratified,
+            seed=cfg.seed if cfg.seed is not None else 42,
+        )
+    )
+    train_x, train_y = cfg.augment.apply(
+        train_x, train_y, seed=cfg.seed if cfg.seed is not None else 42
+    )
 
     num_inputs = len(train_x[0])
     num_outputs = len(train_y[0])
@@ -57,12 +65,15 @@ if __name__ == "__main__":
         epochs=cfg.epochs,
         inputs=train_x,
         targets=train_y,
-        val_inputs=test_x,
-        val_targets=test_y,
+        val_inputs=val_x,
+        val_targets=val_y,
+        test_inputs=test_x,
+        test_targets=test_y,
         target_mse=cfg.target_mse,
         patience=cfg.patience,
         seed=cfg.seed,
         noise_rate=cfg.augment.noise_rate,
+        val_ratio=cfg.val_ratio,
     )
 
     # == Execução do treinamento com salvamento resiliente ====
