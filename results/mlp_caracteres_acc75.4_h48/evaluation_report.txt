@@ -1,0 +1,34 @@
+==============================================================================
+  RELATORIO DE AVALIACAO DO MODELO: mlp_caracteres_acc75.4_h48.json
+==============================================================================
+  Conjunto de Teste Oficial   : 130 amostras fixas (ultimos 5 alfabetos, indices 1196..1325)
+  Acuracia no Teste           : 75.38%
+  MSE no Teste                : 0.06270
+------------------------------------------------------------------------------
+
+[TOP 5 CARACTERES COM MAIOR DIFICULDADE (Menor Acuracia)]
+  Letra 'B':  40.00% (2/5 acertos)
+  Letra 'K':  40.00% (2/5 acertos)
+  Letra 'A':  60.00% (3/5 acertos)
+  Letra 'C':  60.00% (3/5 acertos)
+  Letra 'G':  60.00% (3/5 acertos)
+
+[TOP 5 CARACTERES MAIS RECONHECIDOS (Maior Acuracia)]
+  Letra 'Z': 100.00% (5/5 acertos)
+  Letra 'W': 100.00% (5/5 acertos)
+  Letra 'S': 100.00% (5/5 acertos)
+  Letra 'Q': 100.00% (5/5 acertos)
+  Letra 'M': 100.00% (5/5 acertos)
+
+[MAIORES CONFUSOES OBSERVADAS (Real -> Predito)]
+  Real 'I' classificado como 'J': 2 ocorrencia(s)
+  Real 'K' classificado como 'R': 2 ocorrencia(s)
+  Real 'B' classificado como 'A': 1 ocorrencia(s)
+  Real 'C' classificado como 'D': 1 ocorrencia(s)
+  Real 'K' classificado como 'C': 1 ocorrencia(s)
+  Real 'A' classificado como 'R': 1 ocorrencia(s)
+  Real 'B' classificado como 'R': 1 ocorrencia(s)
+  Real 'D' classificado como 'O': 1 ocorrencia(s)
+  Real 'E' classificado como 'C': 1 ocorrencia(s)
+  Real 'G' classificado como 'R': 1 ocorrencia(s)
+==============================================================================
