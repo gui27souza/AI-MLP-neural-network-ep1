@@ -88,6 +88,7 @@ class TrainConfig:
     patience: int | None
     seed: int | None
     augment: AugmentConfig
+    stratified: bool = True
 
     @classmethod
     def from_env(cls) -> "TrainConfig":
@@ -102,6 +103,7 @@ class TrainConfig:
             patience=_env("PATIENCE", int, default=None),
             seed=_env_seed("SEED", default=42),
             augment=AugmentConfig.from_env(),
+            stratified=_env_bool("STRATIFIED", default=True),
         )
 
 

@@ -19,6 +19,8 @@ from src.training.orchestrator import Orchestrator
 def pipeline(
     train_x: list[list[float]],
     train_y: list[list[float]],
+    val_x: list[list[float]],
+    val_y: list[list[float]],
     test_x: list[list[float]],
     test_y: list[list[float]],
     epochs: int,
@@ -31,9 +33,11 @@ def pipeline(
     min_acc_threshold: float | None = None,
     seed: int | None = 42,
     noise_rate: float = 0.0,
+    val_ratio: float = 0.0,
 ) -> tuple[Orchestrator, str | None]:
     """
-    Constrói a arquitetura, injeta pesos determinísticos e executa o ciclo de treino.
+    Constrói a arquitetura, injeta pesos determinísticos e executa o ciclo de treino
+    com validação (Early Stopping por MSE) e avaliação no conjunto de teste isolado (130 amostras).
     Persiste o modelo somente se atingir o limiar mínimo de acurácia configurado.
     """
     num_inputs = len(train_x[0])
@@ -69,12 +73,15 @@ def pipeline(
         epochs=epochs,
         inputs=train_x,
         targets=train_y,
-        val_inputs=test_x,
-        val_targets=test_y,
+        val_inputs=val_x,
+        val_targets=val_y,
+        test_inputs=test_x,
+        test_targets=test_y,
         target_mse=target_mse,
         patience=patience,
         seed=seed,
         noise_rate=noise_rate,
+        val_ratio=val_ratio,
     )
 
     orch.run(print_epochs_interval=5)
@@ -82,16 +89,22 @@ def pipeline(
     orch.print_results()
     print("")
 
-    best_val_acc_pct = orch.best_val_acc * 100
+    eval_acc_pct = (
+        (orch.test_acc * 100)
+        if orch.test_acc is not None
+        else (orch.best_val_acc * 100)
+    )
 
     saved_file: str | None = None
-    if min_acc_threshold is not None and best_val_acc_pct < min_acc_threshold:
+    if min_acc_threshold is not None and eval_acc_pct < min_acc_threshold:
         print(
-            f"Checkpoint descartado: acurácia ({best_val_acc_pct:.2f}%) "
+            f"Checkpoint descartado: acurácia ({eval_acc_pct:.2f}%) "
             f"inferior ao corte de {min_acc_threshold:.1f}%."
         )
     else:
-        saved_file = MLPPersister.save_checkpoint(orch, dir_path=output_dir, prefix="gs")
+        saved_file = MLPPersister.save_checkpoint(
+            orch, dir_path=output_dir, prefix="gs"
+        )
 
     return orch, saved_file
 
@@ -108,10 +121,12 @@ if __name__ == "__main__":
 
     reporter = GridSearchReporter(output_dir=OUTPUT_DIR)
 
-    # Cache do dataset particionado por proporção de teste (evita releitura de disco)
+    # Cache do dataset particionado por proporção de validação (evita releitura de disco)
     dataset_cache: dict[float, tuple] = {}
     # Cache do treino aumentado indexado por (val_ratio, noise_rate)
-    augmented_cache: dict[tuple[float, float], tuple[list[list[float]], list[list[float]]]] = {}
+    augmented_cache: dict[
+        tuple[float, float], tuple[list[list[float]], list[list[float]]]
+    ] = {}
 
     combinations = list(
         product(
@@ -126,11 +141,18 @@ if __name__ == "__main__":
     total_combinations = len(combinations)
 
     try:
-        for current, (val_ratio, hidden, lr, momentum, patience, noise_rate) in enumerate(combinations, start=1):
+        for current, (val_ratio, hidden, lr, momentum, patience, noise_rate) in enumerate(
+            combinations, start=1
+        ):
             if val_ratio not in dataset_cache:
-                dataset_cache[val_ratio] = DatasetLoader.load_caracteres_completo(val_ratio=val_ratio)
+                dataset_cache[val_ratio] = DatasetLoader.load_caracteres_completo(
+                    val_ratio=val_ratio,
+                    seed=cfg.seed if cfg.seed is not None else 42,
+                )
 
-            raw_train_x, raw_train_y, test_x, test_y, _ = dataset_cache[val_ratio]
+            raw_train_x, raw_train_y, val_x, val_y, test_x, test_y, _ = dataset_cache[
+                val_ratio
+            ]
 
             cache_key = (val_ratio, noise_rate)
             if cache_key not in augmented_cache:
@@ -150,7 +172,7 @@ if __name__ == "__main__":
 
             print(
                 f"\n[RODADA {current}/{total_combinations}] "
-                f"Ratio={val_ratio} | "
+                f"ValRatio={val_ratio} | "
                 f"H={hidden} | "
                 f"LR={lr} | "
                 f"M={momentum} | "
@@ -161,6 +183,8 @@ if __name__ == "__main__":
             orch, saved_file = pipeline(
                 train_x=train_x,
                 train_y=train_y,
+                val_x=val_x,
+                val_y=val_y,
                 test_x=test_x,
                 test_y=test_y,
                 epochs=cfg.max_epochs,
@@ -173,6 +197,7 @@ if __name__ == "__main__":
                 min_acc_threshold=cfg.min_acc_threshold,
                 seed=cfg.seed,
                 noise_rate=noise_rate,
+                val_ratio=val_ratio,
             )
 
             reporter.record_trial(

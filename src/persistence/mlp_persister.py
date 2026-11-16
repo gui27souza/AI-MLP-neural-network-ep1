@@ -131,10 +131,16 @@ class MLPPersister:
             saved_val_mse = orch.best_val_mse if weights_restored else val_mse
             saved_val_acc_pct = (orch.best_val_acc * 100) if weights_restored else val_acc_pct
 
+            test_mse = getattr(orch, "test_mse", None)
+            test_acc = getattr(orch, "test_acc", None)
+            test_acc_pct = (test_acc * 100) if test_acc is not None else None
+
             metrics = {
                 "dataset_info": {
                     "train_samples": len(orch.inputs),
                     "val_samples": len(orch.val_inputs) if orch.val_inputs else 0,
+                    "test_samples": len(orch.test_inputs) if getattr(orch, "test_inputs", None) else 130,
+                    "val_ratio": getattr(orch, "val_ratio", 0.0),
                     "noise_rate": getattr(orch, "noise_rate", 0.0),
                     "is_augmented": getattr(orch, "noise_rate", 0.0) > 0.0,
                 },
@@ -154,12 +160,14 @@ class MLPPersister:
                 "duration_seconds": round(duration, 2),
                 "train_mse": orch.history["train_mse"][-1] if orch.history["train_mse"] else None,
                 "train_acc": round(train_acc_pct, 2),
-                "val_mse": round(val_mse, 5),
-                "val_acc": round(val_acc_pct, 2),
+                "val_mse": round(saved_val_mse, 5) if orch.val_inputs else None,
+                "val_acc": round(saved_val_acc_pct, 2) if orch.val_inputs else None,
                 "best_val_acc": round(best_val_acc * 100, 2),
                 "best_val_acc_epoch": best_val_acc_epoch,
                 "best_val_mse": round(best_val_mse, 5),
                 "best_val_mse_epoch": best_val_mse_epoch,
+                "test_mse": round(test_mse, 5) if test_mse is not None else None,
+                "test_acc": round(test_acc_pct, 2) if test_acc_pct is not None else None,
                 "history": {
                     "train_mse": [round(x, 6) for x in orch.history.get("train_mse", [])],
                     "train_acc": [round(x * 100, 2) for x in orch.history.get("train_acc", [])],
@@ -169,7 +177,8 @@ class MLPPersister:
             }
 
             hidden_desc = "h" + "_".join(str(l.num_neurons) for l in mlp.hidden_layers)
-            filename = f"{prefix}_acc{saved_val_acc_pct:.1f}_{hidden_desc}.json"
+            label_acc = test_acc_pct if test_acc_pct is not None else saved_val_acc_pct
+            filename = f"{prefix}_acc{label_acc:.1f}_{hidden_desc}.json"
             return cls.save(mlp, os.path.join(dir_path, filename), metrics=metrics)
 
         except Exception as e:

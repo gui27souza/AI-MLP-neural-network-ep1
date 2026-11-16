@@ -4,7 +4,7 @@
 
 PYTHON ?= $(if $(wildcard venv/bin/python),venv/bin/python,python3)
 
-.PHONY: help setup main lab_logic_gates grid_search evaluate evaluate_grid full_pipeline full_grid_pipeline
+.PHONY: help setup main lab_logic_gates lab_mesa_test grid_search evaluate evaluate_grid full_pipeline full_grid_pipeline
 
 # ==============================================================================
 #  Ajuda e Setup
@@ -22,6 +22,9 @@ help:
 	@echo
 	@echo "====> lab_logic_gates -> executa as portas lógicas"
 	@echo "      Ex: make lab_logic_gates NUM_EPOCHS=500"
+	@echo
+	@echo "====> lab_mesa_test -> valida o código contra o exemplo numérico oficial (PDF)"
+	@echo "      Ex: make lab_mesa_test"
 	@echo
 	@echo "====> grid_search -> executa a busca em grade de hiperparâmetros"
 	@echo "      Ex: ./run_grid.sh ou make grid_search MAX_EPOCHS=120 HIDDEN_NEURONS=16,48 LEARN_RATE=0.01 MOMENTUM=0.5 PATIENCE=6 VAL_RATIOS=0.3"
@@ -49,11 +52,15 @@ main:
 	SEED="$(SEED)" \
 	NOISE_RATE="$(NOISE_RATE)" \
 	AUGMENT_COPIES="$(AUGMENT_COPIES)" \
+	STRATIFIED="$(STRATIFIED)" \
 	$(PYTHON) -m src.main
 
 lab_logic_gates:
 	@NUM_EPOCHS="$(or $(NUM_EPOCHS),1000)" \
 	$(PYTHON) -m lab.logic_gates.logic_gates
+
+lab_mesa_test:
+	@$(PYTHON) -m lab.mesa_test.mesa_test
 
 grid_search:
 	@MAX_EPOCHS="$(MAX_EPOCHS)" \

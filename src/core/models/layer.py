@@ -4,6 +4,19 @@ import numpy as np
 
 
 class Layer:
+    """
+    Representa uma camada neural densa (Camada Escondida ou Camada de Saída).
+
+    Nomenclatura teórica (Fausett, Seção 6.1.2 / Material de Aula):
+    - Camada Escondida (p neurônios, n entradas):
+      * Pesos: matriz V de dimensão (p x n) e vetor de bias v_0j de dimensão (p).
+      * Potencial de ativação: z_in_j = v_0j + Σ_i (x_i * v_ij)
+      * Saída ativada: z_j = f(z_in_j)
+    - Camada de Saída (m neurônios, p entradas):
+      * Pesos: matriz W de dimensão (m x p) e vetor de bias w_0k de dimensão (m).
+      * Potencial de ativação: y_in_k = w_0k + Σ_j (z_j * w_jk)
+      * Saída ativada: y_k = f(y_in_k)
+    """
 
     def __init__(
         self,
@@ -24,83 +37,140 @@ class Layer:
         b_min, b_max = bias_range
         w_min, w_max = weight_range
 
-        # Inicializa os Bias de cada neurônio com um valor aleatório
-        # em dado intervalo, armazenando em um vetor de valores
-        self.bias: list[float] = list(np.random.uniform(
-            low=b_min,
-            high=b_max,
-            size=num_neurons
-        ))
+        # Inicializa os biases (v_0j ou w_0k) de cada neurônio no intervalo especificado
+        self.bias: list[float] = list(
+            np.random.uniform(low=b_min, high=b_max, size=num_neurons)
+        )
 
-        # Inicializa os pesos de cada neurônio com um vetor de tamanho
-        # 'número de entradas' com valores aleatórios em dado intervalo,
-        # armazenando em um vetor de vetores
+        # Inicializa a matriz de pesos (v_ij ou w_jk) de dimensão (num_neurons x num_inputs)
         self.weights: list[list[float]] = [
-            list(np.random.uniform(
-                low=w_min,
-                high=w_max,
-                size=num_inputs
-            ))
+            list(np.random.uniform(low=w_min, high=w_max, size=num_inputs))
             for _ in range(num_neurons)
         ]
 
-        self.last_inputs = []
-        self.last_outputs = []
+        # Estado em cache da última propagação direta (usado no Backpropagation)
+        self.last_inputs: list[float] = []
+        self.last_outputs: list[float] = []
 
-        self.last_delta_weights = [
-            [0.0 for _ in range(num_inputs)]
-            for _ in range(num_neurons)
+        # Acumuladores da variação anterior de pesos (Δv(t-1) ou Δw(t-1)) para o Momentum
+        self.last_delta_weights: list[list[float]] = [
+            [0.0 for _ in range(num_inputs)] for _ in range(num_neurons)
         ]
-        self.last_delta_bias = [0.0 for _ in range(num_neurons)]
+        self.last_delta_bias: list[float] = [0.0 for _ in range(num_neurons)]
 
-    # ================
+    # =========================================================================
+    #  PROPAGAÇÃO DIRETA (FEEDFORWARD — Slide 3)
+    # =========================================================================
 
-    # ====
-
-    # ====
-
-    # ================
+    def compute_net_input(self, i_neuron: int, inputs: list[float]) -> float:
+        """
+        Calcula o potencial de ativação (combinação linear + bias) de um neurônio:
+        z_in_j = v_0j + Σ_i (x_i * v_ij)   [ou y_in_k = w_0k + Σ_j (z_j * w_jk)]
+        """
+        net_in = self.bias[i_neuron]
+        for inp, weight in zip(inputs, self.weights[i_neuron]):
+            net_in += inp * weight
+        return net_in
 
     def forward(self, inputs: list[float]) -> list[float]:
         """
-        Executa a propagação direta (Feedforward) da camada.
+        Executa a fase de Feedforward da camada:
+        Para cada neurônio, calcula o somatório ponderado (net_in) e aplica a ativação f(net_in).
         """
-
         if len(inputs) != self.num_inputs:
             raise ValueError(
-                "número de entradas deve ser igual "
-                "ao número de pesos. "
-                f"Entradas: {inputs} | "
-                f"Pesos: {self.num_inputs}"
+                "Número de entradas deve ser igual ao número de pesos. "
+                f"Entradas: {len(inputs)} | Pesos esperados: {self.num_inputs}"
             )
 
-        # Salva entradas para o cálculo de
-        # correção de pesos no backward
+        # Armazena as entradas (x_i ou z_j) para uso na atualização de pesos do Backpropagation
         self.last_inputs = inputs
 
-        # Itera pelos neurônios, calculando o somatório ponderado + bias e aplicando f(...)
         outputs: list[float] = []
         for i_neuron in range(self.num_neurons):
-
-            # Somatório inicial com bias
-            # net_i = b_i + Σ_j (x_j * w_ij)
-            y_in_neuron = self.bias[i_neuron]
-
-            for inp, w in zip(inputs, self.weights[i_neuron]):
-                y_in_neuron += inp * w
-
-            # Ativação
-            # y_i = f(y_in_neuron)
+            y_in_neuron = self.compute_net_input(i_neuron, inputs)
             outputs.append(self.activation_func(y_in_neuron))
 
-        # Salva saídas ativadas para cálculo de f'(y) no backward
+        # Armazena as saídas ativadas (z_j ou y_k) para o cálculo da derivada f'(net_in)
         self.last_outputs = outputs
-
         return outputs
 
-    # ====
+    # =========================================================================
+    #  RETROPROPAGAÇÃO DO ERRO (BACKPROPAGATION — Slides 4 e 5)
+    # =========================================================================
 
-    # ====
+    def compute_output_deltas(
+        self, target: list[float], outputs: list[float]
+    ) -> list[float]:
+        """
+        Calcula o termo de informação de erro para a camada de saída (Passo 6 de Fausett — Slide 4):
+        δ_k = (t_k - y_k) * f'(y_in_k)
+        """
+        output_deltas: list[float] = []
+        for t_k, y_k in zip(target, outputs):
+            delta_k = (t_k - y_k) * self.derivative_activation(y_k)
+            output_deltas.append(delta_k)
+        return output_deltas
+
+    def compute_hidden_deltas(
+        self,
+        next_layer_deltas: list[float],
+        next_layer_weights: list[list[float]],
+    ) -> list[float]:
+        """
+        Calcula a contribuição do erro na camada escondida (Passo 7 de Fausett — Slide 5):
+        1. Soma ponderada dos erros da camada seguinte: δ_in_j = Σ_k (δ_k * w_jk)
+        2. Multiplicação pela derivada da ativação:     δ_j = δ_in_j * f'(z_in_j)
+        """
+        hidden_deltas: list[float] = []
+        for j_neuron in range(self.num_neurons):
+            # δ_in_j = Σ_k (δ_k * w_jk)
+            delta_in_j = 0.0
+            for k_next, delta_k in enumerate(next_layer_deltas):
+                weight_jk = next_layer_weights[k_next][j_neuron]
+                delta_in_j += delta_k * weight_jk
+
+            # δ_j = δ_in_j * f'(z_in_j)
+            z_j = self.last_outputs[j_neuron]
+            delta_j = delta_in_j * self.derivative_activation(z_j)
+            hidden_deltas.append(delta_j)
+
+        return hidden_deltas
+
+    # =========================================================================
+    #  ATUALIZAÇÃO DE PESOS SINÁPTICOS (REGRA DELTA — Slide 6)
+    # =========================================================================
+
+    def update_weights(
+        self,
+        deltas: list[float],
+        learn_rate: float,
+        momentum: float = 0.0,
+    ) -> None:
+        """
+        Atualiza os pesos sinápticos e biases da camada via Gradiente Descendente
+        (Passo 8 de Fausett — Slide 6), com suporte opcional a termo de Momentum (μ):
+        - Bias:  Δw_0 = α * δ + μ * Δw_0(t-1)       =>  w_0 <- w_0 + Δw_0
+        - Pesos: Δw_ji = α * δ * x_i + μ * Δw_ji(t-1) =>  w_ji <- w_ji + Δw_ji
+        """
+        for i_neuron in range(self.num_neurons):
+            delta_i = deltas[i_neuron]
+
+            # Correção e atualização do bias
+            delta_bias = (learn_rate * delta_i) + (
+                momentum * self.last_delta_bias[i_neuron]
+            )
+            self.bias[i_neuron] += delta_bias
+            self.last_delta_bias[i_neuron] = delta_bias
+
+            # Correção e atualização dos pesos conectados às entradas da camada
+            for j_input in range(self.num_inputs):
+                inp_val = self.last_inputs[j_input]
+                delta_w = (learn_rate * delta_i * inp_val) + (
+                    momentum * self.last_delta_weights[i_neuron][j_input]
+                )
+                self.weights[i_neuron][j_input] += delta_w
+                self.last_delta_weights[i_neuron][j_input] = delta_w
 
     def backward(
         self,
@@ -110,56 +180,22 @@ class Layer:
         momentum: float = 0.0,
     ) -> list[float]:
         """
-        Executa a retropropagação de erro e a atualização de pesos para uma camada escondida.
+        Calcula os deltas da camada escondida e aplica imediatamente a atualização de pesos.
         """
-
-        current_layer_deltas: list[float] = []
-
-        # Retropropagação do erro da camada seguinte para a atual
-        for i_neuron in range(self.num_neurons):
-
-            # δ_in_j = Σ_k (δ_k * w_kj)
-            error_sum = 0.0
-            for k_next_neuron in range(len(next_layer_deltas)):
-                delta_k = next_layer_deltas[k_next_neuron]
-                weight_ki = next_layer_weights[k_next_neuron][i_neuron]
-                error_sum += delta_k * weight_ki
-
-            # δ_j = δ_in_j * f'(z_j)
-            y_i = self.last_outputs[i_neuron]
-            delta_i = error_sum * self.derivative_activation(y_i)
-            current_layer_deltas.append(delta_i)
-
-        # Correção e atualização de pesos e bias
-        for i_neuron in range(self.num_neurons):
-            delta_i = current_layer_deltas[i_neuron]
-
-            # Correção do bias com Momentum
-            # Δv_0j = α * δ_j + μ * Δv_0j(t-1)
-            delta_bias = (learn_rate * delta_i) + (momentum * self.last_delta_bias[i_neuron])
-
-            # Atualização 
-            # v_0j = v_0j + Δv_0j
-            self.bias[i_neuron] += delta_bias
-            self.last_delta_bias[i_neuron] = delta_bias
-
-            # Correção dos pesos com Momentum
-            for j_input in range(self.num_inputs):
-
-                # Δv_ij = α * δ_j * x_i + μ * Δv_ij(t-1)
-                x_j = self.last_inputs[j_input]
-                delta_w = (learn_rate * delta_i * x_j) + (momentum * self.last_delta_weights[i_neuron][j_input])
-
-                # Atualização 
-                # v_ij = v_ij + Δv_ij
-                self.weights[i_neuron][j_input] += delta_w
-                self.last_delta_weights[i_neuron][j_input] = delta_w
-
+        current_layer_deltas = self.compute_hidden_deltas(
+            next_layer_deltas=next_layer_deltas,
+            next_layer_weights=next_layer_weights,
+        )
+        self.update_weights(
+            deltas=current_layer_deltas,
+            learn_rate=learn_rate,
+            momentum=momentum,
+        )
         return current_layer_deltas
 
-    # ====
-
-    # ====
+    # =========================================================================
+    #  GERENCIAMENTO DE ESTADO E CHECKPOINTS
+    # =========================================================================
 
     def reset_deltas(self) -> None:
         """Zera os acumuladores de variação anterior de pesos e bias (momentum)."""
@@ -170,18 +206,14 @@ class Layer:
         self.last_delta_bias = [0.0 for _ in range(self.num_neurons)]
 
     def get_weights(self) -> dict:
-        """
-        Retorna uma cópia dos pesos e biases da camada.
-        """
+        """Retorna uma cópia profunda dos pesos e biases da camada."""
         return {
             "bias": self.bias[:],
             "weights": [w[:] for w in self.weights],
         }
 
     def set_weights(self, state: dict) -> None:
-        """
-        Restaura os pesos e biases da camada a partir de um snapshot.
-        """
+        """Restaura os pesos e biases da camada a partir de um snapshot e reseta o momentum."""
         self.bias = state["bias"][:]
         self.weights = [w[:] for w in state["weights"]]
         self.reset_deltas()
