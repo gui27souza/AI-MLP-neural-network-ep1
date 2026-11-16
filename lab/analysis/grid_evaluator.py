@@ -56,6 +56,9 @@ class GridSearchEvaluator:
             for r in csv.DictReader(f):
                 train_acc = float(r["final_train_acc"]) if r.get("final_train_acc") else 0.0
                 val_acc = float(r["best_val_acc"])
+                val_mse = float(r["best_val_mse"])
+                test_acc = float(r["test_acc"]) if r.get("test_acc") else val_acc
+                test_mse = float(r["test_mse"]) if r.get("test_mse") else val_mse
                 rows.append({
                     "rodada": int(r["rodada"]),
                     "hidden": int(r["hidden_neurons"]),
@@ -71,7 +74,9 @@ class GridSearchEvaluator:
                     "best_val_acc": val_acc,
                     "best_val_acc_epoch": int(r["best_val_acc_epoch"]) if r.get("best_val_acc_epoch") else 0,
                     "final_val_mse": float(r["final_val_mse"]) if r.get("final_val_mse") else 0.0,
-                    "best_val_mse": float(r["best_val_mse"]),
+                    "best_val_mse": val_mse,
+                    "test_acc": test_acc,
+                    "test_mse": test_mse,
                     "duracao_s": float(r["duracao_s"]),
                     "checkpoint": r.get("checkpoint", ""),
                     "overfit_gap": round(train_acc - val_acc, 2),
@@ -93,9 +98,10 @@ class GridSearchEvaluator:
             f"- **Topologia:** `H = {best['hidden']}`\n"
             f"- **Hiperparametros:** `Val Ratio = {best['val_ratio']}`, `LR = {best['lr']}`, "
             f"`Momentum = {best['momentum']}`, `Patience = {best['patience']}`, `Noise = {best['noise_rate']}`\n"
-            f"- **Melhor Acuracia de Validacao:** **{best['best_val_acc']:.2f}%** (alcancada na epoca {best['best_val_acc_epoch']})\n"
+            f"- **Desempenho no Teste (130 fixos):** Acuracia = **{best['test_acc']:.2f}%** | MSE Teste = **{best['test_mse']:.5f}**\n"
+            f"- **Melhor Epoca na Validacao (Menor MSE):** Epoca {best['best_val_acc_epoch']} "
+            f"(MSE Val: **{best['best_val_mse']:.5f}** | Acc Val: **{best['best_val_acc']:.2f}%**)\n"
             f"- **Acuracia de Treino Final:** {best['final_train_acc']:.2f}% (Gap Treino-Val: **{best['overfit_gap']:+.2f}%**)\n"
-            f"- **Menor MSE de Validacao:** **{best['best_val_mse']:.5f}**\n"
             f"- **Epocas Executadas:** {best['epochs_exec']} ({best['duracao_s']:.2f}s) | Parada Antecipada: `{early_str}`\n"
             f"- **Checkpoint Salvo:** `{ckpt_str}`\n"
         )
@@ -157,15 +163,15 @@ class GridSearchEvaluator:
         k = min(top_k, len(sorted_rows))
         lines = [
             f"## {section_idx}. Top {k} Melhores Modelos da Execucao\n",
-            "| Pos | Rodada | H | Ratio | LR | Momentum | P | Noise | Acc Treino | Acc Val | Gap Overfit | MSE Val | Epocas | Tempo | Checkpoint |",
-            "| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |",
+            "| Pos | Rodada | H | Ratio | LR | Momentum | P | Noise | Acc Treino | Acc Val | MSE Val | Acc Teste | MSE Teste | Epocas | Tempo | Checkpoint |",
+            "| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |",
         ]
 
         for rank, r in enumerate(sorted_rows[:k], start=1):
             lines.append(
                 f"| #{rank} | #{r['rodada']} | {r['hidden']} | {r['val_ratio']:.2f} | {r['lr']} | {r['momentum']} | "
-                f"{r['patience']} | {r['noise_rate']:.2f} | {r['final_train_acc']:.2f}% | **{r['best_val_acc']:.2f}%** | "
-                f"{r['overfit_gap']:+.2f}% | {r['best_val_mse']:.5f} | {r['epochs_exec']} | {r['duracao_s']:.1f}s | `{r['checkpoint']}` |"
+                f"{r['patience']} | {r['noise_rate']:.2f} | {r['final_train_acc']:.2f}% | {r['best_val_acc']:.2f}% | "
+                f"{r['best_val_mse']:.5f} | **{r['test_acc']:.2f}%** | {r['test_mse']:.5f} | {r['epochs_exec']} | {r['duracao_s']:.1f}s | `{r['checkpoint']}` |"
             )
 
         return "\n".join(lines)
@@ -191,7 +197,10 @@ class GridSearchEvaluator:
     def generate_report(self, output_md: str | None = None) -> str:
         """Monta o relatório ANALISE_GRID_SEARCH.md combinando as seções."""
         dest_md = output_md or os.path.join(self.target_dir, "ANALISE_GRID_SEARCH.md")
-        sorted_rows = sorted(self.rows, key=lambda x: (-x["best_val_acc"], x["best_val_mse"]))
+        sorted_rows = sorted(
+            self.rows,
+            key=lambda x: (-x["test_acc"], x["best_val_mse"], -x["best_val_acc"]),
+        )
 
         header = f"# Relatorio Analitico - Grid Search\n\nTotal de Modelos Treinados: {len(self.rows)}\n"
         champion_sec = self._build_champion_section(sorted_rows[0])
