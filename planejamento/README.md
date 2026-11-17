@@ -6,3 +6,4 @@ Arquivos diretos ao ponto para montar os slides e fechar a entrega:
 2. **[02_planilha_checklist.md](./02_planilha_checklist.md)** — Tabelas prontas para copiar e colar no `docs/Checklist.xlsx`.
 3. **[03_codigo_slides_2_a_7.md](./03_codigo_slides_2_a_7.md)** — Recortes de código limpos para os Slides 2 a 7.
 4. **[04_conteudo_slides_6_a_12.md](./04_conteudo_slides_6_a_12.md)** — Tabelas, gráficos e bullets curtos de fala para os Slides 6 a 12.
+5. **[05_colinha_insights_e_testes.md](./05_colinha_insights_e_testes.md)** — Colinha de insights do baseline e comandos sugeridos para novos testes.
