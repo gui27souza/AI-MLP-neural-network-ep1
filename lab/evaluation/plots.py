@@ -8,8 +8,9 @@ def plot_learning_curves(
     stopping_info: dict,
     model_name: str,
     output_dir: str,
+    eval_results: dict | None = None,
 ) -> str | None:
-    """Gera o grafico comparativo de curvas de aprendizado (MSE e Acuracia)."""
+    """Gera o grafico comparativo de curvas de aprendizado (MSE e Acuracia) com destaque para o Teste."""
     train_mse = history.get("train_mse", [])
     val_mse = history.get("val_mse", [])
     train_acc = history.get("train_acc", [])
@@ -20,7 +21,10 @@ def plot_learning_curves(
 
     os.makedirs(output_dir, exist_ok=True)
     epochs = list(range(1, len(train_mse) + 1))
-    saved_epoch = stopping_info.get("saved_epoch")
+    saved_epoch = stopping_info.get("saved_epoch") or len(epochs)
+
+    test_mse = eval_results.get("overall_mse") if eval_results else None
+    test_acc = eval_results.get("overall_accuracy") if eval_results else None
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
 
@@ -30,6 +34,18 @@ def plot_learning_curves(
         ax1.plot(epochs, val_mse, label="MSE Validacao", color="#ff7f0e", linewidth=2, linestyle="--")
     if saved_epoch and saved_epoch <= len(epochs):
         ax1.axvline(x=saved_epoch, color="#2ca02c", linestyle=":", label=f"Melhor Epoca ({saved_epoch})")
+    if test_mse is not None:
+        ax1.axhline(y=test_mse, color="#e74c3c", linestyle="-.", alpha=0.55)
+        ax1.scatter(
+            [min(saved_epoch, len(epochs))],
+            [test_mse],
+            color="#e74c3c",
+            edgecolors="black",
+            marker="*",
+            s=180,
+            zorder=5,
+            label=f"MSE Teste ({test_mse:.5f})",
+        )
     ax1.set_title("Curva de Aprendizado - MSE")
     ax1.set_xlabel("Epocas")
     ax1.set_ylabel("MSE")
@@ -43,6 +59,18 @@ def plot_learning_curves(
         ax2.plot(epochs, val_acc, label="Acc Validacao (%)", color="#ff7f0e", linewidth=2, linestyle="--")
     if saved_epoch and saved_epoch <= len(epochs):
         ax2.axvline(x=saved_epoch, color="#2ca02c", linestyle=":", label=f"Melhor Epoca ({saved_epoch})")
+    if test_acc is not None:
+        ax2.axhline(y=test_acc, color="#e74c3c", linestyle="-.", alpha=0.55)
+        ax2.scatter(
+            [min(saved_epoch, len(epochs))],
+            [test_acc],
+            color="#e74c3c",
+            edgecolors="black",
+            marker="*",
+            s=180,
+            zorder=5,
+            label=f"Acc Teste ({test_acc:.2f}%)",
+        )
     ax2.set_title("Curva de Acuracia (%)")
     ax2.set_xlabel("Epocas")
     ax2.set_ylabel("Acuracia (%)")

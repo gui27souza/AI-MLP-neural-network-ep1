@@ -4,3 +4,4 @@ models/.latest_model.txt
 models/grid_search/.latest_grid.txt
 run.sh
 run_grid.sh
+.DS_Store

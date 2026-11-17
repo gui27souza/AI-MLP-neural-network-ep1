@@ -101,10 +101,10 @@ class MLPEvaluator:
 
         return dest_path
 
-    def plot_learning_curves(self, output_dir: str | None = None) -> str | None:
+    def plot_learning_curves(self, eval_results: dict | None = None, output_dir: str | None = None) -> str | None:
         target_dir = output_dir if output_dir is not None else self.output_dir
         stopping_info = self.metrics.get("stopping_info", {})
-        return plot_learning_curves(self.history, stopping_info, self.model_filename, target_dir)
+        return plot_learning_curves(self.history, stopping_info, self.model_filename, target_dir, eval_results=eval_results)
 
     def plot_confusion_matrix(self, eval_results: dict, output_dir: str | None = None) -> str | None:
         target_dir = output_dir if output_dir is not None else self.output_dir
@@ -131,6 +131,6 @@ if __name__ == "__main__":
     evaluator.print_evaluation_report(results)
     evaluator.copy_model_to_results()
     evaluator.save_evaluation_report(results)
-    evaluator.plot_learning_curves()
+    evaluator.plot_learning_curves(results)
     evaluator.plot_confusion_matrix(results)
     evaluator.export_official_deliverables(results)
