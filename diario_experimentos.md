@@ -79,3 +79,14 @@
     - GD Puro (`M=0.0`): **81.54%** teste (`MSE 0.04930`, 42 épocas).
     - Sem Early Stopping (60 épocas): decorou o treino (**99.08%**), caiu para **81.54%** no teste (`MSE 0.04928`).
     - Sem Estratificação (`STRATIFIED=false`): despencou para **75.38%** no teste (`-6.93 pp`, `MSE 0.06270`).
+
+- **Fase 3 — Refinamento Final e Cenários da Entrega (`results/fase3_experimentos_finais`):**
+  - **1. Funil de 4 Grids (`1_busca_melhor_modelo`):**
+    - Descoberta de que `VAL_RATIO=0.30` (832 treino / 364 val) combinado com `PATIENCE=5`, `LR=0.005` e `M=0.85` em `H=48` atinge o **recorde oficial de 85.38% no teste (111/130 acertos)** e **87.09% na validação** em apenas **27 épocas (21.5s)**.
+    - O zoom fino (`LR ∈ {0.004, 0.005, 0.006}` x `M ∈ {0.825, 0.85, 0.875}`) confirmou um platô estável com média de **84.19% no teste** e **87.33% na validação**.
+  - **2. Quinteto Comparativo Oficial (`2_comparativo_cenarios_finais` — `H=48, LR=0.005`):**
+    - Campeão (Momentum `0.85` + Early Stopping `P=5`): **85.38%** teste | **87.09%** val (27 épocas / `21.56s`).
+    - GD Puro (`M=0.0` + Early Stopping `P=10`): **83.85%** teste | **88.46%** val (119 épocas / `95.00s` — 4.4x mais lento).
+    - Sem Parada Antecipada (`VAL_RATIO=0.0`, 80 épocas): decorou o treino (**99.16%**), caiu para **80.00%** no teste (`-5.38 pp`).
+    - Sem Estratificação (`STRATIFIED=false`): caiu para **80.77%** no teste (`-4.61 pp`).
+    - Com Ruído 15% (`NOISE_RATE=0.15`): caiu para **76.92%** no teste (`-8.46 pp`).
