@@ -32,3 +32,10 @@ def build_report_text(model_name: str, eval_results: dict) -> str:
 
     lines.append("=" * 78)
     return "\n".join(lines)
+
+# ==============================================================================
+# Integrantes do Grupo (EACH-USP | Inteligência Artificial 2026):
+# - Guilherme Oliveira de Souza (Nº USP: 14671388)
+# - Paulo Rogerio Andrade de Oliveira (Nº USP: 9365783)
+# - Victor Hugo Antunes Valadares (Nº USP: 14760317)
+# ==============================================================================

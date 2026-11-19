@@ -134,3 +134,10 @@ if __name__ == "__main__":
     evaluator.plot_learning_curves(results)
     evaluator.plot_confusion_matrix(results)
     evaluator.export_official_deliverables(results)
+
+# ==============================================================================
+# Integrantes do Grupo (EACH-USP | Inteligência Artificial 2026):
+# - Guilherme Oliveira de Souza (Nº USP: 14671388)
+# - Paulo Rogerio Andrade de Oliveira (Nº USP: 9365783)
+# - Victor Hugo Antunes Valadares (Nº USP: 14760317)
+# ==============================================================================

@@ -1,3 +1,8 @@
+============================================================
+INTEGRANTES DO GRUPO (EACH-USP | IA 2026)
+- Guilherme Oliveira de Souza (Nº USP: 14671388)
+- Paulo Rogerio Andrade de Oliveira (Nº USP: 9365783)
+- Victor Hugo Antunes Valadares (Nº USP: 14760317)
 ==============================================================================
   RELATORIO DE AVALIACAO DO MODELO: mlp_caracteres_acc80.8_h48.json
 ==============================================================================

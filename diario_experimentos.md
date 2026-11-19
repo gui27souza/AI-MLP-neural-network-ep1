@@ -1,5 +1,11 @@
 # Diário de Experimentos - MLP EP1
 
+> **Integrantes do Grupo (EACH-USP | IA 2026 — Entrega 1: MLP):**
+> - **Guilherme Oliveira de Souza** — Nº USP: `14671388`
+> - **Paulo Rogerio Andrade de Oliveira** — Nº USP: `9365783`
+> - **Victor Hugo Antunes Valadares** — Nº USP: `14760317`
+
+
 - **Grid Search Amplo (192 rodadas):**
   - Mapeamento geral do espaço de hiperparâmetros; identificação de H=48 como topologia ótima (~86.65%).
 
@@ -73,12 +79,12 @@
   - **2. Proporção de Validação (`results/2_grid_proporcao_validacao` - 12 modelos):**
     - `0.20` teve o melhor equilíbrio (**83.85%** teste / **86.64%** val médio), superando `0.10` (val pequena, **81.54%**) e `0.30` (perde amostras de treino, **82.31%** teste).
   - **3. Ruído no Treino (`results/3_grid_robustez_ruido` - 8 modelos):**
-    - Reduziu o gap de overfit (`Treino - Val`) de `+13.10%` (limpo) para `+7.96%` (`30%` de ruído), segurando **81.54%** no teste até `15%` de ruído.
+    - Reduziu o gap de overfit (`Treino - Val`) de **+13.10%** (limpo) para **+7.96%** (`30%` de ruído), segurando **81.54%** no teste até `15%` de ruído.
   - **4. Comparativo Controlado `H=48, LR=0.025` (`results/4_comparativo_slides_h48_lr025`):**
     - Com Momentum + Early Stopping: **82.31%** teste (`MSE 0.04847`, 29 épocas).
     - GD Puro (`M=0.0`): **81.54%** teste (`MSE 0.04930`, 42 épocas).
     - Sem Early Stopping (60 épocas): decorou o treino (**99.08%**), caiu para **81.54%** no teste (`MSE 0.04928`).
-    - Sem Estratificação (`STRATIFIED=false`): despencou para **75.38%** no teste (`-6.93 pp`, `MSE 0.06270`).
+    - Sem Estratificação (`STRATIFIED=false`): despencou para **75.38%** no teste (**-6.93 pp**, `MSE 0.06270`).
 
 - **Fase 3 — Refinamento Final e Cenários da Entrega (`results/fase3_experimentos_finais`):**
   - **1. Funil de 4 Grids (`1_busca_melhor_modelo`):**
@@ -87,6 +93,6 @@
   - **2. Quinteto Comparativo Oficial (`2_comparativo_cenarios_finais` — `H=48, LR=0.005`):**
     - Campeão (Momentum `0.85` + Early Stopping `P=5`): **85.38%** teste | **87.09%** val (27 épocas / `21.56s`).
     - GD Puro (`M=0.0` + Early Stopping `P=10`): **83.85%** teste | **88.46%** val (119 épocas / `95.00s` — 4.4x mais lento).
-    - Sem Parada Antecipada (`VAL_RATIO=0.0`, 80 épocas): decorou o treino (**99.16%**), caiu para **80.00%** no teste (`-5.38 pp`).
-    - Sem Estratificação (`STRATIFIED=false`): caiu para **80.77%** no teste (`-4.61 pp`).
-    - Com Ruído 15% (`NOISE_RATE=0.15`): caiu para **76.92%** no teste (`-8.46 pp`).
+    - Sem Parada Antecipada (`VAL_RATIO=0.0`, 80 épocas): decorou o treino (**99.16%**), caiu para **80.00%** no teste (**-5.38 pp**).
+    - Sem Estratificação (`STRATIFIED=false`): caiu para **80.77%** no teste (**-4.61 pp**).
+    - Com Ruído 15% (`NOISE_RATE=0.15`): caiu para **76.92%** no teste (**-8.46 pp**).

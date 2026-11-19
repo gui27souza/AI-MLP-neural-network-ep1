@@ -424,3 +424,10 @@ def plot_all_grid_visualizations(rows: list[dict], target_dir: str) -> dict[str,
 def plot_grid_search_insights(rows: list[dict], output_path: str) -> str:
     """Funcao de compatibilidade que redireciona para plot_global_insights."""
     return plot_global_insights(rows, output_path)
+
+# ==============================================================================
+# Integrantes do Grupo (EACH-USP | Inteligência Artificial 2026):
+# - Guilherme Oliveira de Souza (Nº USP: 14671388)
+# - Paulo Rogerio Andrade de Oliveira (Nº USP: 9365783)
+# - Victor Hugo Antunes Valadares (Nº USP: 14760317)
+# ==============================================================================

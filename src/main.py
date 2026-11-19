@@ -89,3 +89,10 @@ if __name__ == "__main__":
         if saved_path:
             with open("models/.latest_model.txt", "w", encoding="utf-8") as f:
                 f.write(saved_path.strip())
+
+# ==============================================================================
+# Integrantes do Grupo (EACH-USP | Inteligência Artificial 2026):
+# - Guilherme Oliveira de Souza (Nº USP: 14671388)
+# - Paulo Rogerio Andrade de Oliveira (Nº USP: 9365783)
+# - Victor Hugo Antunes Valadares (Nº USP: 14760317)
+# ==============================================================================

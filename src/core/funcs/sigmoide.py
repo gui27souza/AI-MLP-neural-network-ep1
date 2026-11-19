@@ -31,3 +31,10 @@ def deriv_sigmoide_bipolar(y: float) -> float:
     Derivada da sigmoide bipolar expressa em termos do valor ativado y = f(y_in).
     """
     return 0.5 * (1 - y) * (1 + y)
+
+# ==============================================================================
+# Integrantes do Grupo (EACH-USP | Inteligência Artificial 2026):
+# - Guilherme Oliveira de Souza (Nº USP: 14671388)
+# - Paulo Rogerio Andrade de Oliveira (Nº USP: 9365783)
+# - Victor Hugo Antunes Valadares (Nº USP: 14760317)
+# ==============================================================================

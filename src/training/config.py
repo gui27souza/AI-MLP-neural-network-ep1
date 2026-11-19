@@ -142,3 +142,10 @@ class GridSearchConfig:
             seed=_env_seed("SEED", default=42),
             augment_copies=_env("AUGMENT_COPIES", int, default=1),
         )
+
+# ==============================================================================
+# Integrantes do Grupo (EACH-USP | Inteligência Artificial 2026):
+# - Guilherme Oliveira de Souza (Nº USP: 14671388)
+# - Paulo Rogerio Andrade de Oliveira (Nº USP: 9365783)
+# - Victor Hugo Antunes Valadares (Nº USP: 14760317)
+# ==============================================================================

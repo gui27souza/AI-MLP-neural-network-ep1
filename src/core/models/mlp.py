@@ -6,17 +6,17 @@ from .layer import Layer
 
 class MLP:
     """
-    Rede Neural Artificial Multilayer Perceptron (MLP) treinada via Backpropagation
-    com Gradiente Descendente (Fausett, Seção 6.1.2).
+    Rede Neural Artificial Multilayer Perceptron (MLP) — Backpropagation com GD (Fausett 6.1.2).
 
     Estrutura Arquitetural (Slide 2):
-    - Camada de Entrada (n unidades): Vetor de atributos descritivos x = (x_1, ..., x_n).
-      No problema CARACTERES COMPLETO, n = 120 pixels (matriz 10x12 em [-1, +1]).
-    - Camada Escondida (p neurônios): Processa representações internas z = (z_1, ..., z_p)
-      através da matriz de pesos V de dimensão (p x n) + vetor de bias v_0j.
-    - Camada de Saída (m neurônios): Produz a resposta y = (y_1, ..., y_m)
-      através da matriz de pesos W de dimensão (m x p) + vetor de bias w_0k.
-      No problema CARACTERES COMPLETO, m = 26 neurônios (classes 'A' a 'Z').
+    - Camada de Entrada (n=120 pixels) -> Camada Escondida (p neurônios, matriz V)
+    - Camada de Saída (m=26 classes 'A'..'Z', matriz W).
+
+    Integrantes do Grupo (EACH-USP | Inteligência Artificial 2026):
+    - Guilherme Oliveira de Souza (Nº USP: 14671388)
+    - Paulo Rogerio Andrade de Oliveira (Nº USP: 9365783)
+    - Victor Hugo Antunes Valadares (Nº USP: 14760317)
+
     """
 
     def __init__(

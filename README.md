@@ -1,5 +1,11 @@
 # AI-MLP-neural-network-ep1
 
+> **Integrantes do Grupo (EACH-USP | IA 2026 — Entrega 1: MLP):**
+> - **Guilherme Oliveira de Souza** — Nº USP: `14671388`
+> - **Paulo Rogerio Andrade de Oliveira** — Nº USP: `9365783`
+> - **Victor Hugo Antunes Valadares** — Nº USP: `14760317`
+
+
 Implementação de uma Rede Neural Multicamadas (MLP - Multi-Layer Perceptron) baseada no algoritmo Backpropagation com Gradiente Descendente de Laurene Fausett, com suporte a Momentum, Parada Antecipada (Early Stopping guiado por MSE) e Erro Alvo (Target MSE) para reconhecimento e classificação de caracteres (`CARACTERES COMPLETO`).
 
 ---

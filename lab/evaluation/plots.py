@@ -125,3 +125,10 @@ def plot_confusion_matrix(eval_results: dict, model_name: str, output_dir: str) 
 
     print(f"Matriz de confusao salva em: {output_path}")
     return output_path
+
+# ==============================================================================
+# Integrantes do Grupo (EACH-USP | Inteligência Artificial 2026):
+# - Guilherme Oliveira de Souza (Nº USP: 14671388)
+# - Paulo Rogerio Andrade de Oliveira (Nº USP: 9365783)
+# - Victor Hugo Antunes Valadares (Nº USP: 14760317)
+# ==============================================================================

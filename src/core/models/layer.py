@@ -5,17 +5,17 @@ import numpy as np
 
 class Layer:
     """
-    Representa uma camada neural densa (Camada Escondida ou Camada de Saída).
+    Representa uma camada neural densa (Camada Escondida V ou Camada de Saída W).
 
     Nomenclatura teórica (Fausett, Seção 6.1.2 / Material de Aula):
-    - Camada Escondida (p neurônios, n entradas):
-      * Pesos: matriz V de dimensão (p x n) e vetor de bias v_0j de dimensão (p).
-      * Potencial de ativação: z_in_j = v_0j + Σ_i (x_i * v_ij)
-      * Saída ativada: z_j = f(z_in_j)
-    - Camada de Saída (m neurônios, p entradas):
-      * Pesos: matriz W de dimensão (m x p) e vetor de bias w_0k de dimensão (m).
-      * Potencial de ativação: y_in_k = w_0k + Σ_j (z_j * w_jk)
-      * Saída ativada: y_k = f(y_in_k)
+    - Camada Escondida (p neurônios, n entradas): z_in_j = v_0j + Σ_i(x_i*v_ij), z_j = f(z_in_j)
+    - Camada de Saída  (m neurônios, p entradas): y_in_k = w_0k + Σ_j(z_j*w_jk), y_k = f(y_in_k)
+
+    Integrantes do Grupo (EACH-USP | Inteligência Artificial 2026):
+    - Guilherme Oliveira de Souza (Nº USP: 14671388)
+    - Paulo Rogerio Andrade de Oliveira (Nº USP: 9365783)
+    - Victor Hugo Antunes Valadares (Nº USP: 14760317)
+
     """
 
     def __init__(
