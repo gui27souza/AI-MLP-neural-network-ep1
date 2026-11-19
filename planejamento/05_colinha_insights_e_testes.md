@@ -1,5 +1,11 @@
 # 5. Colinha de Insights & Guia para Novos Testes
 
+> **Integrantes do Grupo (EACH-USP | IA 2026 — Entrega 1: MLP):**
+> - **Guilherme Oliveira de Souza** — Nº USP: `14671388`
+> - **Paulo Rogerio Andrade de Oliveira** — Nº USP: `9365783`
+> - **Victor Hugo Antunes Valadares** — Nº USP: `14760317`
+
+
 ## 1. Os 5 Insights Essenciais do Baseline Inicial
 
 1. **Taxa de Aprendizado ($\eta$) — O "Pulo do Gato" da Fase 2:**

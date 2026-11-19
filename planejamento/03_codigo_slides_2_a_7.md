@@ -1,5 +1,11 @@
 # 3. Recortes de Código para os Slides 2 a 7
 
+> **Integrantes do Grupo (EACH-USP | IA 2026 — Entrega 1: MLP):**
+> - **Guilherme Oliveira de Souza** — Nº USP: `14671388`
+> - **Paulo Rogerio Andrade de Oliveira** — Nº USP: `9365783`
+> - **Victor Hugo Antunes Valadares** — Nº USP: `14760317`
+
+
 ## Slide 2 — Estruturas de dados e programação
 - **Entrada (120 pixels) e Saída (26 classes One-Hot Bipolar):** `src/data/dataset_loader.py` (linhas 48–68)
 ```python

@@ -1,5 +1,11 @@
 # 1. O que Entregar + Regras Críticas + Divisão de Slides
 
+> **Integrantes do Grupo (EACH-USP | IA 2026 — Entrega 1: MLP):**
+> - **Guilherme Oliveira de Souza** — Nº USP: `14671388`
+> - **Paulo Rogerio Andrade de Oliveira** — Nº USP: `9365783`
+> - **Victor Hugo Antunes Valadares** — Nº USP: `14760317`
+
+
 ## Checklist Final de Postagem (e-Disciplinas — Prazo: 25/nov até 23h55)
 - [ ] **Identificação obrigatória em TODOS os artefatos** (`Checklist.xlsx` linha 26): incluir **Nome Completo + Nº USP de todos os integrantes** nos cabeçalhos dos arquivos `.py`, no `README.md`, nos slides (capa e encerramento) e em qualquer PDF.
 - [ ] **Código-fonte documentado** (sem subir arquivos extras não solicitados).
@@ -10,8 +16,8 @@
   - [ ] Se o vídeo for hospedado fora do e-Disciplinas (YouTube/Drive), postar no e-Disciplinas um **arquivo `.pdf` contendo o link público + a minutagem (início e fim de cada tópico/slide)**.
 - [ ] **5 Arquivos de saída para cada teste realizado** (gerados em `saidas_oficiais/`):
   1. `hiperparametros.txt` (arquitetura + inicialização + divisão treino/val/teste)
-  2. `pesos_iniciais.csv` (`+ _V.csv, _W.csv`)
-  3. `pesos_finais.csv` (`+ _V.csv, _W.csv`)
+  2. `pesos_iniciais.csv` ((`_V.csv`, `_W.csv`))
+  3. `pesos_finais.csv` ((`_V.csv`, `_W.csv`))
   4. `historico_erro_treinamento.csv` (erro MSE por época)
   5. `saidas_teste_continuas.csv` e `saidas_teste_discretas.csv` (saídas para os 130 dados de teste)
 

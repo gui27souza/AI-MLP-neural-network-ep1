@@ -1,5 +1,11 @@
 # 4. Conteúdo Direto dos Slides 6 a 13 (Resultados Finais da Fase 3)
 
+> **Integrantes do Grupo (EACH-USP | IA 2026 — Entrega 1: MLP):**
+> - **Guilherme Oliveira de Souza** — Nº USP: `14671388`
+> - **Paulo Rogerio Andrade de Oliveira** — Nº USP: `9365783`
+> - **Victor Hugo Antunes Valadares** — Nº USP: `14760317`
+
+
 ## Slide 6 — Atualização de pesos sinápticos
 - **No slide:**
   - Código de `update_weights` e `_update_weights` (`03_codigo_slides_2_a_7.md`).
