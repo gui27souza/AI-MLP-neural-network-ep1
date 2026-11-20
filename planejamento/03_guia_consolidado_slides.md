@@ -486,13 +486,13 @@ make full_pipeline NUM_EPOCHS=120 HIDDEN_NEURONS=48 LEARN_RATE=0.005 \
 
 **Título:** `Treinamento e parada antecipada`
 
-**Coluna da Esquerda (Divisão Oficial dos Conjuntos no `CARACTERES COMPLETO` = 1.326 amostras):**
-- **Conjunto de Treinamento (`832` amostras — 70% dev):**
-  - Primeiros **32 alfabetos completos** (`32 × 26 = 832`, índices `0..831`).
-- **Conjunto de Validação (`364` amostras — 30% dev):**
-  - Próximos **14 alfabetos completos** (`14 × 26 = 364`, índices `832..1195`), monitorando o **MSE de validação** a cada época + *rollback* automático para `best_weights`.
-- **Conjunto de Teste Fixo (`130` amostras):**
-  - Últimos **5 alfabetos completos** (`5 × 26 = 130`, índices `1196..1325`), isolados para avaliação final.
+**Coluna da Esquerda (Divisão Oficial dos Conjuntos no `CARACTERES COMPLETO` = 1.326 amostras / 51 alfabetos):**
+- **Conjunto de Teste Fixo (`130` amostras — últimos 5 alfabetos):**
+  - Últimas **130 linhas** do arquivo (`índices 1196..1325`, `5 × 26 = 130`), isoladas no início conforme a especificação.
+- **Conjunto de Treinamento (`832` amostras — 70% das 1.196 restantes):**
+  - Primeiros **32 alfabetos completos** (`32 × 26 = 832`, `índices 0..831`).
+- **Conjunto de Validação (`364` amostras — 30% das 1.196 restantes):**
+  - Próximos **14 alfabetos completos** (`14 × 26 = 364`, `índices 832..1195`), monitorando o **MSE de validação** a cada época + *rollback* automático para `best_weights`.
 
 **Coluna da Direita (Vídeo Acelerado do Terminal + Resumo das 2 Execuções com `H=48, LR=0.005`):**
 - **Execução 1 — Campeão com Momentum (`M=0.85, PATIENCE=5`):**
