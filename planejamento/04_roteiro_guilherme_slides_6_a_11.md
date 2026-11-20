@@ -1,17 +1,14 @@
-# Guia Completo — Slides 6 a 9 (+ Opcional 10 e 11) + Roteiro de Gravação (MLP)
+# Guia Completo — Seus Slides 6 a 11 + Roteiro de Gravação (MLP)
 
 > **Integrantes do Grupo (EACH-USP | IA 2026 — Entrega 1: MLP):**
 > - **Guilherme Oliveira de Souza** — Nº USP: `14671388`
 > - **Paulo Rogerio Andrade de Oliveira** — Nº USP: `9365783`
 > - **Victor Hugo Antunes Valadares** — Nº USP: `14760317`
 
-
-Este arquivo segue o mesmo formato prático do `cnn/roteiro.md` e contém:
+Este arquivo segue o mesmo formato prático do `cnn/roteiro.md` e cobre **toda a sua parte oficial da apresentação (Slides 6 a 11)**:
 1. **Mapa rápido das imagens prontas em `artefatos_entrega/`** para arrastar direto para o Canva / PowerPoint.
-2. **Estrutura visual e textos prontos para colar nos slides** (mantendo 100% da ordem e dos títulos oficiais do `docs/template-slides.pptx`):
-   - **Sua Parte Principal (Tópicos 6 a 9):** `Slide 6`, `Slide 7`, `Slide 8.1`, `Slide 8.2` e `Slide 9` (~4,5 a 5 min de fala).
-   - **Extensão Opcional (Tópicos 10 e 11):** `Slide 10`, `Slide 11.1` e `Slide 11.2` (+2,5 a 3 min de fala, caso você decida gravar até Parada Antecipada).
-3. **Roteiro falado cronometrado** com indicação exata de quando alternar entre os Slides e o VS Code / Terminal.
+2. **Estrutura visual e textos/códigos 100% fiéis ao `src/` (com docstrings e comentários)** para colar nos slides (`Slide 6`, `Slide 7`, `Slide 8.1`, `Slide 8.2`, `Slide 9`, `Slide 10`, `Slide 11.1` e `Slide 11.2`).
+3. **Roteiro falado cronometrado (~7 a 7,5 min no total)** com indicação exata de quando mostrar os Slides, o VS Code e o vídeo acelerado do Terminal.
 
 ---
 
@@ -56,27 +53,47 @@ Este arquivo segue o mesmo formato prático do `cnn/roteiro.md` e contém:
   - **Biases ($b$):** $\Delta b_i(t) = \alpha \cdot \delta_i + \mu \cdot \Delta b_i(t-1)$
   - Quando `momentum = 0.0`, executa o **Gradiente Descendente puro**; quando `momentum > 0` (ex.: `0.85`), adiciona inércia da atualização anterior.
 
-**Coluna da Direita (Bloco de Código):**
-- `src/core/models/mlp.py` (linhas 233–243) e `src/core/models/layer.py` (linhas 139–169):
+**Coluna da Direita (2 Cards de Código Separados — 100% Fiéis ao `src/`):**
+
+- **Card 6A — Orquestração Modular (`src/core/models/mlp.py`, linhas 250–260):**
 ```python
-# src/core/models/mlp.py (linhas 233-243)
 def _update_weights(self, target: list[float], outputs: list[float]) -> None:
+    """
+    Orquestra a fase de Backpropagation em 3 etapas modulares (Passos 6, 7 e 8 de Fausett):
+    1. Calcula informação de erro na camada de saída (δ_k)
+    2. Calcula contribuição do erro na camada escondida (δ_j)
+    3. Atualiza pesos e biases de todas as camadas (ΔW e ΔV)
+    """
     output_deltas = self._compute_output_deltas(target, outputs)
     hidden_deltas_per_layer = self._compute_hidden_deltas(output_deltas)
     self._apply_weight_updates(output_deltas, hidden_deltas_per_layer)
+```
 
-# src/core/models/layer.py (linhas 139-169)
+- **Card 6B — Regra Delta + Momentum na Camada (`src/core/models/layer.py`, linhas 144–173):**
+```python
 def update_weights(
-    self, deltas: list[float], learn_rate: float, momentum: float = 0.0
+    self,
+    deltas: list[float],
+    learn_rate: float,
+    momentum: float = 0.0,
 ) -> None:
+    """
+    Atualiza os pesos sinápticos e biases da camada via Gradiente Descendente
+    (Passo 8 de Fausett — Slide 6), com suporte opcional a termo de Momentum (μ):
+    - Bias:  Δw_0 = α * δ + μ * Δw_0(t-1)       =>  w_0 <- w_0 + Δw_0
+    - Pesos: Δw_ji = α * δ * x_i + μ * Δw_ji(t-1) =>  w_ji <- w_ji + Δw_ji
+    """
     for i_neuron in range(self.num_neurons):
         delta_i = deltas[i_neuron]
+
+        # Correção e atualização do bias
         delta_bias = (learn_rate * delta_i) + (
             momentum * self.last_delta_bias[i_neuron]
         )
         self.bias[i_neuron] += delta_bias
         self.last_delta_bias[i_neuron] = delta_bias
 
+        # Correção e atualização dos pesos conectados às entradas da camada
         for j_input in range(self.num_inputs):
             inp_val = self.last_inputs[j_input]
             delta_w = (learn_rate * delta_i * inp_val) + (
@@ -100,25 +117,32 @@ def update_weights(
   - `recognize_character(inputs)` converte o índice $k^* \in \{0..25\}$ de volta no caractere correspondente (`chr(ord("A") + pred_idx)` $\rightarrow$ `'A'` a `'Z'`).
 - **Geração dos Arquivos Oficiais de Teste (130 amostras):**
   - **Saídas Contínuas (`saidas_teste_continuas.csv`):** valores brutos $y_k \in (-1, +1)$.
-  - **Saídas Discretas (`saidas_teste_discretas.csv`):** vetor *One-Hot Bipolar* com $+1.0$ no neurônio vencedor $k^*$ e $-1.0$ nos demais 25 neurônios.
+  - **Saídas Discretas (`saidas_teste_discretas.csv`):** vetor *One-Hot Bipolar* com **+1.0** no neurônio vencedor $k^*$ e **-1.0** nos demais 25 neurônios.
 
-**Coluna da Direita (Bloco de Código):**
-- `src/core/models/mlp.py` (linhas 95–112):
+**Coluna da Direita (2 Cards de Código Separados — 100% Fiéis ao `src/`):**
+
+- **Card 7A — Decisão Winner-Takes-All (`src/core/models/mlp.py`, linhas 98–104):**
 ```python
-# src/core/models/mlp.py (linhas 95-112)
 def predict_class(self, outputs: list[float]) -> int:
-    """Retorna o indice do neuronio com maior ativacao (argmax)."""
+    """
+    Procedimento de decisão para reconhecimento de caractere (Slide 7):
+    Aplica a regra Winner-Takes-All (argmax), selecionando o índice do neurônio
+    de saída k com maior valor de ativação contínua y_k.
+    """
     return int(np.argmax(outputs))
+```
 
+- **Card 7B — Inferência e Mapeamento para `'A'..'Z'` (`src/core/models/mlp.py`, linhas 106–116):**
+```python
 def recognize_character(
     self, inputs: list[float], class_labels: list[str] | None = None
 ) -> tuple[int, str, list[float]]:
-    """Executa o feedforward e retorna (indice, letra 'A'..'Z', vetor de saidas)."""
+    """
+    Realiza a inferência para uma amostra de caractere e retorna (índice, letra, vetor_saída).
+    """
     outputs = self.predict(inputs)
     pred_idx = self.predict_class(outputs)
-    labels = class_labels or [
-        chr(ord("A") + i) for i in range(self.num_outputs)
-    ]
+    labels = class_labels or [chr(ord("A") + i) for i in range(self.num_outputs)]
     pred_char = labels[pred_idx] if pred_idx < len(labels) else str(pred_idx)
     return pred_idx, pred_char, outputs
 ```
@@ -207,8 +231,6 @@ make full_pipeline NUM_EPOCHS=120 HIDDEN_NEURONS=48 LEARN_RATE=0.005 \
 ![Custo Computacional](../artefatos_entrega/slide_09_dinamica_e_custo/1_custo_computacional_H16_H48_H64.png)
 
 ---
-
-### *(OPCIONAL — SE VOCÊ DECIDIR GRAVAR ATÉ O SLIDE 11)*
 
 ### **SLIDE 10 — Treinamento e parada antecipada (Divisão dos Conjuntos + 2 Execuções)**
 
@@ -307,8 +329,8 @@ Teste Final (130 fixos) : MSE = 0.052412 | Acc = 85.38%
 > **🎬 PREPARAÇÃO ANTES DE DAR REC (30 segundos):**
 > 1. Deixe o **Canva / PowerPoint** aberto na sua apresentação.
 > 2. Deixe o **VS Code** aberto ao lado com 3 abas já posicionadas (sem precisar digitar nada ao vivo):
->    - Aba 1: `src/core/models/layer.py` paradinho na **linha 139** (`def update_weights`).
->    - Aba 2: `src/core/models/mlp.py` paradinho na **linha 95** (`def predict_class` e `def recognize_character`) — e rolando um pouco chega na **linha 233** (`def _update_weights`).
+>    - Aba 1: `src/core/models/layer.py` paradinho na **linha 144** (`def update_weights`).
+>    - Aba 2: `src/core/models/mlp.py` paradinho na **linha 98** (`def predict_class` e `def recognize_character`) — e rolando um pouco chega na **linha 250** (`def _update_weights`).
 >    - Aba 3: `src/training/config.py` na **linha 40** (`from_env`) ou `Makefile` para mostrar como os parâmetros entram via CLI.
 > 3. Lembre de manter a **webcam ligada** num canto da tela e falar em **velocidade normal (1x)**.
 
@@ -320,24 +342,24 @@ Teste Final (130 fixos) : MSE = 0.052412 | Acc = 85.38%
 
 *"Pessoal, dando sequência na explicação do algoritmo de treinamento da nossa MLP, agora no **Slide 6** eu vou mostrar como implementamos a **atualização dos pesos sinápticos** após o cálculo dos erros de retropropagação.*
 
-*Um cuidado fundamental de implementação que tomamos — seguindo fielmente a teoria do Backpropagation — está na ordem de execução dentro do método `_update_weights` da classe `MLP`: primeiro nós calculamos todos os deltas da camada de saída ($\delta_k$) e retropropagamos os deltas da camada escondida ($\delta_j$) usando a matriz de pesos $W$ **ainda intacta**, antes de alterar qualquer peso. Só depois que todos os deltas estão prontos é que chamamos `_apply_weight_updates`.*
+*Um cuidado fundamental de implementação que tomamos — seguindo fielmente a teoria do Backpropagation — está na ordem de execução dentro do método `_update_weights` da classe `MLP` (linhas 250 a 260): primeiro nós calculamos todos os deltas da camada de saída ($\delta_k$) e retropropagamos os deltas da camada escondida ($\delta_j$) usando a matriz de pesos $W$ **ainda intacta**, antes de alterar qualquer peso. Só depois que todos os deltas estão prontos é que chamamos `_apply_weight_updates`.*
 
-**[👉 AÇÃO NA TELA: Alterna rapidamente para o VS Code na aba `src/core/models/layer.py` na linha 139]**
+**[👉 AÇÃO NA TELA: Alterna rapidamente para o VS Code na aba `src/core/models/layer.py` na linha 144]**
 
-*Olhando aqui diretamente no nosso código em `layer.py`, a partir da linha 139, temos o método `update_weights`:*
-- *Para cada neurônio `i_neuron` da camada, nas linhas 145 a 149, atualizamos primeiro o **bias**: calculamos `delta_bias` multiplicando a taxa de aprendizado `learn_rate` pelo `delta_i` daquele neurônio, somado ao termo de `momentum` vezes a variação anterior `last_delta_bias`.*
-- *Logo abaixo, no laço das linhas 151 a 158, percorremos cada entrada `j_input` conectada a esse neurônio — que na camada escondida são os 120 pixels $x_i$ e na camada de saída são as ativações ocultas $z_j$ salvas em `self.last_inputs` — e aplicamos a Regra Delta Generalizada: `learn_rate * delta_i * inp_val` mais o termo inercial `momentum * last_delta_weights`. Quando `momentum` é zero, temos o Gradiente Descendente puro exigido na especificação; quando ativamos `momentum = 0.85`, aceleramos drasticamente a descida."*
+*Olhando aqui diretamente no nosso código em `layer.py`, nas linhas 144 a 173, temos o método `update_weights`:*
+- *Para cada neurônio `i_neuron` da camada, nas linhas 159 a 164, atualizamos primeiro o **bias**: calculamos `delta_bias` multiplicando a taxa de aprendizado `learn_rate` pelo `delta_i` daquele neurônio, somado ao termo de `momentum` vezes a variação anterior `last_delta_bias`.*
+- *Logo abaixo, no laço das linhas 167 a 173, percorremos cada entrada `j_input` conectada a esse neurônio — que na camada escondida são os 120 pixels $x_i$ e na camada de saída são as ativações ocultas $z_j$ salvas em `self.last_inputs` — e aplicamos a Regra Delta Generalizada: `learn_rate * delta_i * inp_val` mais o termo inercial `momentum * last_delta_weights`. Quando `momentum` é zero, temos o Gradiente Descendente puro exigido na especificação; quando ativamos `momentum = 0.85`, aceleramos drasticamente a descida."*
 
 ---
 
 ### ⏱️ **[1:10 – 2:00] Tópico 7: Resposta de Reconhecimento de Caractere (VS Code `mlp.py` $\rightarrow$ Slide 7)**
 
-**[👉 AÇÃO NA TELA: Clica na aba `src/core/models/mlp.py` na linha 95 e depois volta para o SLIDE 7]**
+**[👉 AÇÃO NA TELA: Clica na aba `src/core/models/mlp.py` na linha 98 e depois volta para o SLIDE 7]**
 
-*"Passando para a **resposta de reconhecimento de caractere**, aqui em `mlp.py` nas linhas 95 a 112 — e também resumido no **Slide 7**:*
+*"Passando para a **resposta de reconhecimento de caractere**, aqui em `mlp.py` nas linhas 98 a 116 — e também resumido no **Slide 7**:*
 - *Como a nossa camada de saída possui **26 neurônios** (um para cada letra de A a Z) ativados pela função **Sigmoide Bipolar**, o método `predict` devolve um vetor de 26 valores reais contínuos no intervalo entre **-1** e **+1**.*
-- *Para transformar esse vetor contínuo na decisão da letra reconhecida, implementamos a estratégia **Winner-Takes-All** no método `predict_class` (linha 95) usando `np.argmax(outputs)`: o neurônio que apresentar a **maior ativação contínua** vence a disputa, o que evita empates ou indecisões que aconteceriam se usássemos um limiar rígido.*
-- *Em seguida, o método `recognize_character` (linha 99) mapeia o índice vencedor de `0 a 25` diretamente para o caractere `'A'` a `'Z'`, além de exportar nos arquivos finais tanto as saídas contínuas em $(-1, +1)$ quanto as saídas discretas convertidas em **-1** e **+1**."*
+- *Para transformar esse vetor contínuo na decisão da letra reconhecida, implementamos a estratégia **Winner-Takes-All** no método `predict_class` (linha 98) usando `np.argmax(outputs)`: o neurônio que apresentar a **maior ativação contínua** vence a disputa, o que evita empates ou indecisões que aconteceriam se usássemos um limiar rígido.*
+- *Em seguida, o método `recognize_character` (linha 106) mapeia o índice vencedor de `0 a 25` diretamente para o caractere `'A'` a `'Z'`, além de exportar nos arquivos finais tanto as saídas contínuas em $(-1, +1)$ quanto as saídas discretas convertidas em **-1** e **+1**."*
 
 ---
 
@@ -370,11 +392,9 @@ Teste Final (130 fixos) : MSE = 0.052412 | Acc = 85.38%
   - *Com $\eta = 0.005$, o tempo cai pela metade: **29 épocas médias (`23 segundos`)**.*
   - *E o destaque principal está nas duas últimas linhas da tabela: comparando o **Gradiente Descendente Puro ($\mu = 0.00$)** com o nosso modelo **Com Momentum ($\mu = 0.85$)** na mesma arquitetura, o GD Puro precisou de **119 épocas e 95 segundos** para atingir `83,85%` no teste, enquanto o Momentum convergiu em apenas **27 épocas e 21,56 segundos** cravando **85,38%** — uma **redução de 77% no tempo de treinamento (4,4 vezes mais rápido)** e com melhor generalização."*
 
-*(💡 **Se você for parar no Slide 9**, encerre aqui dizendo: "Agora passo a palavra para mostrarmos as execuções de treinamento e a análise da parada antecipada." **Se decidir continuar até o Slide 11**, siga direto abaixo!)*
-
 ---
 
-### ⏱️ **[OPCIONAL 4:50 – 6:10] Tópico 10: Treinamento e Parada Antecipada (Slide 10 com Vídeo Acelerado das 2 Execuções)**
+### ⏱️ **[4:50 – 6:10] Tópico 10: Treinamento e Parada Antecipada (Slide 10 com Vídeo Acelerado das 2 Execuções)**
 
 **[👉 AÇÃO NA TELA: Avança para o SLIDE 10 e dá Play no vídeo acelerado do terminal embutido no slide (ou na edição) enquanto fala em 1x]**
 
@@ -386,7 +406,7 @@ Teste Final (130 fixos) : MSE = 0.052412 | Acc = 85.38%
 
 ---
 
-### ⏱️ **[OPCIONAL 6:10 – 7:30] Tópico 11: Parada Antecipada e Ambientes Dificultados (Slides 11.1 e 11.2)**
+### ⏱️ **[6:10 – 7:30] Tópico 11: Parada Antecipada e Ambientes Dificultados (Slides 11.1 e 11.2)**
 
 **[👉 AÇÃO NA TELA: Avança para o SLIDE 11.1]**
 
@@ -398,7 +418,7 @@ Teste Final (130 fixos) : MSE = 0.052412 | Acc = 85.38%
 
 *Por fim, no **Slide 11.2**, atendendo à sugestão do template de **dificultar o ambiente de experimentação** para estressar a parada antecipada, realizamos dois experimentos adicionais:*
 1. *À esquerda, **removemos a estratificação (`STRATIFIED=false`)**, sorteando treino e validação de forma puramente aleatória: como algumas letras ficam sub-representadas na validação, o gatilho de parada perde precisão e a acurácia no teste cai para **80,77% (-4,61 pp)**.*
-2. *À direita, **injetamos 15% de ruído bipolar (`NOISE_RATE=0.15`)**, invertendo pixels aleatoriamente nos dados de desenvolvimento: vemos que a curva de MSE se estabiliza num patamar mais alto e ruidoso, mas a parada antecipada ainda consegue frear o treinamento na época 30 e garantir **76,92% de acerto (100/130)** no teste oficial."*
+2. *À direita, **injetamos 15% de ruído bipolar (`NOISE_RATE=0.15`)**, invertendo pixels aleatoriamente nos dados de desenvolvimento: vemos que a curva de MSE se estabiliza num patamar mais alto e ruidoso, mas a parada antecipada ainda consegue frear o treinamento na época 30 e garantir **76,92% de acerto (100/130)** no teste oficial. Agora passo a palavra para o Victor para a análise das Matrizes de Confusão e implementações adicionais."*
 
 ---
 
@@ -406,8 +426,8 @@ Teste Final (130 fixos) : MSE = 0.052412 | Acc = 85.38%
 
 | Slide | Arquivo para abrir no VS Code | Linhas | O que apontar com o mouse |
 | :---: | :--- | :---: | :--- |
-| **Slide 6** | `src/core/models/mlp.py` | **233–243** | `_update_weights`: calcula `output_deltas` e `hidden_deltas` antes de `_apply_weight_updates`. |
-| **Slide 6** | `src/core/models/layer.py` | **139–169** | `update_weights`: atualização de `self.bias` e `self.weights` com `learn_rate` e `momentum`. |
-| **Slide 7** | `src/core/models/mlp.py` | **95–112** | `predict_class` (`np.argmax(outputs)`) e `recognize_character` (mapeia `0..25` $\rightarrow$ `'A'..'Z'`). |
+| **Slide 6** | `src/core/models/mlp.py` | **250–260** | `_update_weights`: calcula `output_deltas` e `hidden_deltas` antes de `_apply_weight_updates`. |
+| **Slide 6** | `src/core/models/layer.py` | **144–173** | `update_weights`: atualização de `self.bias` e `self.weights` com `learn_rate` e `momentum`. |
+| **Slide 7** | `src/core/models/mlp.py` | **98–116** | `predict_class` (`np.argmax(outputs)`) e `recognize_character` (mapeia `0..25` $\rightarrow$ `'A'..'Z'`). |
 | **Slide 8** | `src/training/config.py` (ou `Makefile`) | **40–75** | `MLPConfig.from_env()`: leitura de `HIDDEN_NEURONS`, `LEARN_RATE`, `MOMENTUM`, `PATIENCE`, `VAL_RATIO`. |
-| **Slide 10** | `src/training/orchestrator.py` | **94–137** | Monitoramento de `val_mse < best_val_mse`, contador `patience_counter` e rollback `best_weights`. |
+| **Slide 10** | `src/training/orchestrator.py` | **91–136** | Monitoramento de `val_mse < best_val_mse`, contador `_patience_counter` e rollback `best_weights`. |

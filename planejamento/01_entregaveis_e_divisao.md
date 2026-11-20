@@ -23,21 +23,24 @@
 
 ---
 
-## Mapa Exato dos 14 Slides (`docs/template-slides.pptx` — não alterar a ordem!)
+## Mapa Exato dos 14 Tópicos do Template (`docs/template-slides.pptx` — manter a ordem!)
 
-| Slide | Título Oficial no Template | O que apresentar | Referência no Repo |
-| :---: | :--- | :--- | :--- |
-| **1** | **Capa (MLP Implementações)** | Nomes completos, Nº USP e indicação de quem apresenta no vídeo | — |
-| **2** | **Estruturas de dados e programação** | Entrada (120 pixels), saída (26 classes), camada oculta ($p$) e matrizes de pesos ($V, W$) | `03_codigo_slides_2_a_7.md` |
-| **3** | **Feedforward e cálculo do erro da rede** | Código do `compute_net_input`, `forward`, `predict` e `compute_mse` | `03_codigo_slides_2_a_7.md` |
-| **4** | **Backpropagation – cálculo do erro para retropropagação** | Código do erro na camada de saída (`compute_output_deltas`, $\delta_k$) + derivada | `03_codigo_slides_2_a_7.md` |
-| **5** | **Backpropagation – contribuição do erro na camada escondida** | Código da contribuição na camada oculta (`compute_hidden_deltas`, $\delta_j$) | `03_codigo_slides_2_a_7.md` |
-| **6** | **Atualização de pesos sinápticos** | Código do `update_weights` ($\Delta W, \Delta V$) e `_update_weights` | `03_codigo...` + `04_conteudo...` |
-| **7** | **Resposta de reconhecimento de caractere** | Código do `predict_class` (`argmax`) e `recognize_character` | `03_codigo...` + `04_conteudo...` |
-| **8** | **Determinação de parâmetros** | Como parametriza via CLI/scripts + quais parâmetros variam + gráficos/tabelas da busca | `04_conteudo_slides_6_a_12.md` |
-| **9** | **Dinâmica de treinamento e teste** | Hardware + tabelas de tempo ($H \times \text{tempo} \times \text{épocas}$, $\eta \times \text{tempo} \times \text{épocas}$) | `04_conteudo_slides_6_a_12.md` |
-| **10** | **Treinamento e parada antecipada** | **Execução no terminal/vídeo (mín. 2 execuções)** + erro treino/val/teste + divisão dos conjuntos (`962/234/130`) | `04_conteudo_slides_6_a_12.md` |
-| **11** | **Parada antecipada** | Gráficos das curvas de MSE + ambiente dificultado (ruído e/ou amostragem sem estratificação) | `04_conteudo_slides_6_a_12.md` |
-| **12** | **Matriz de confusão** | Matrizes de confusão variando condições (parâmetros, com/sem parada antecipada) + análise | `04_conteudo_slides_6_a_12.md` |
-| **13** | **Implementações adicionais** | Hold-out estratificado, Momentum, Data Augmentation Bipolar, Rollback `best_weights`, Portas Lógicas/Teste de Mesa | `04_conteudo_slides_6_a_12.md` |
-| **14** | **Encerramento (MLP Implementações)** | Slide final com nomes e Nº USP | — |
+> [!TIP]
+> **Os 14 slides do template são um índice de tópicos na ordem obrigatória:** como a própria professora orienta no template (*"Você pode usar mais slides, entre os tópicos que coloquei ou depois para questões adicionais, mas NÃO altere a ordem de apresentação dos tópicos"*), desdobrem à vontade cada tópico em sub-slides (`2.1, 2.2`, `3.1, 3.2`, `8.1, 8.2`, `11.1, 11.2`, `12.1, 12.2`) mantendo o título do tópico no topo para que nenhum slide fique poluído!
+
+| Tópico | Título Oficial no Template | Apresentador | O que apresentar | Referência no Repo |
+| :---: | :--- | :---: | :--- | :--- |
+| **1** | **Capa (MLP Implementações)** | **Paulo** | Nomes completos, Nº USP e indicação de quem apresenta no vídeo | `03_guia_consolidado_slides.md` |
+| **2** | **Estruturas de dados e programação** | **Paulo** | Entrada (120 pixels), saída (26 classes), camada oculta ($p$) e matrizes de pesos ($V, W$) | `03_guia_consolidado_slides.md` |
+| **3** | **Feedforward e cálculo do erro da rede** | **Paulo** | Código do `compute_net_input`, `forward`, `predict` e `compute_mse` | `03_guia_consolidado_slides.md` |
+| **4** | **Backpropagation – cálculo do erro para retropropagação** | **Paulo** | Código do erro na camada de saída (`compute_output_deltas`, $\delta_k$) + derivada | `03_guia_consolidado_slides.md` |
+| **5** | **Backpropagation – contribuição do erro na camada escondida** | **Paulo** | Código da contribuição na camada oculta (`compute_hidden_deltas`, $\delta_j$) | `03_guia_consolidado_slides.md` |
+| **6** | **Atualização de pesos sinápticos** | **Guilherme** | Código do `update_weights` ($\Delta W, \Delta V$) e `_update_weights` | `03_guia...` / `04_roteiro...` |
+| **7** | **Resposta de reconhecimento de caractere** | **Guilherme** | Código do `predict_class` (`argmax`) e `recognize_character` | `03_guia...` / `04_roteiro...` |
+| **8** | **Determinação de parâmetros** | **Guilherme** | Como parametriza via CLI/scripts + quais parâmetros variam + gráficos/tabelas da busca | `03_guia...` / `04_roteiro...` |
+| **9** | **Dinâmica de treinamento e teste** | **Guilherme** | Hardware + tabelas de tempo ($H \times \text{tempo} \times \text{épocas}$, $\eta \times \text{tempo} \times \text{épocas}$) | `03_guia...` / `04_roteiro...` |
+| **10** | **Treinamento e parada antecipada** | **Guilherme** | **Execução no terminal/vídeo (mín. 2 execuções)** + erro treino/val/teste + divisão (`832/364/130`) | `03_guia...` / `04_roteiro...` |
+| **11** | **Parada antecipada** | **Guilherme** | Gráficos das curvas de MSE + ambiente dificultado (ruído e/ou amostragem sem estratificação) | `03_guia...` / `04_roteiro...` |
+| **12** | **Matriz de confusão** | **Victor** | Matrizes de confusão variando condições (parâmetros, com/sem parada antecipada) + análise | `03_guia_consolidado_slides.md` |
+| **13** | **Implementações adicionais** | **Victor** | Hold-out estratificado, Momentum, Data Augmentation Bipolar, Rollback `best_weights`, Portas Lógicas/Teste de Mesa | `03_guia_consolidado_slides.md` |
+| **14** | **Encerramento (MLP Implementações)** | **Victor** | Slide final com nomes e Nº USP | `03_guia_consolidado_slides.md` |
